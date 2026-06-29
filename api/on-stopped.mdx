@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:onStopped() — Run a Callback When an Animation Ends"
+title: "onStopped() — React When an Animation Track Stops"
 sidebarTitle: "onStopped()"
 description: "onStopped() connects a callback to the Stopped signal of an animation track, firing once when the track finishes or is explicitly stopped."
 icon: "flag-checkered"
 ---
 
-`onStopped()` connects a callback to an animation track's `Stopped` signal. The callback fires exactly once when the track finishes playing naturally or is halted by a call to `stop()`. This is useful for sequencing post-animation logic — re-enabling movement, chaining a transition, or triggering a cooldown — without polling or guessing at timings.
+`onStopped()` connects a callback to an animation track's `Stopped` signal. The callback fires once when the track finishes playing naturally **or** is halted by a manual call to `stop()` — there is no distinction between the two. This is useful for sequencing post-animation logic — re-enabling movement, chaining a transition, or triggering a cooldown — without polling or guessing at timings. Because the connection is made against a live `AnimationTrack`, the animation must already be playing before you call this method.
 
 ## Signature
 
@@ -24,7 +24,7 @@ AnimationService:onStopped(
 </ParamField>
 
 <ParamField body="id" type="string" required>
-  The animation ID string whose track you want to listen to.
+  The animation ID string (key from `init()`) whose track you want to listen to.
 </ParamField>
 
 <ParamField body="callback" type="function" required>
@@ -37,7 +37,7 @@ An `RBXScriptConnection` you can use to disconnect the listener manually, or `ni
 
 ## Example
 
-Lock player movement while a stun animation plays, then automatically unlock it the moment the track stops — regardless of whether it ended naturally or was cut short.
+Lock player movement while a stun animation plays, then automatically unlock it the moment the track stops — regardless of whether it ended naturally or was cut short by `stop()`.
 
 ```lua
 local AnimationService = require(game.ReplicatedStorage.EZAnim)
@@ -62,10 +62,10 @@ AnimationService:onStopped(character, "Stunned", function()
 end)
 ```
 
-<Note>
-  The track **must already be playing** before you call `onStopped()`. If the track has not been started, `getAnim()` returns `nil` and this method returns `nil` without connecting anything.
-</Note>
+<Warning>
+  The track **must already be playing** before you call `onStopped()`. If the track has not been started, the method returns `nil` without connecting anything — no error is raised. Always call `play()` first.
+</Warning>
 
 <Note>
-  The `Stopped` signal fires for **both** natural completion and manual calls to `stop()`. If you need to distinguish between the two, track the reason yourself before calling `stop()`.
+  The `Stopped` signal fires for **both** natural completion and manual calls to `stop()`. If you need to distinguish between the two, record the reason yourself before calling `stop()`.
 </Note>

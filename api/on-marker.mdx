@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:onMarker() — React to Animation Keyframe Markers"
+title: "onMarker() — Connect a Callback to a Keyframe Marker"
 sidebarTitle: "onMarker()"
-description: "onMarker() connects a callback to fire whenever a named KeyframeMarker is reached in a playing animation track."
+description: "onMarker() connects your callback to fire when a named KeyframeMarker is reached. The track must already be playing — returns nil silently if not found."
 icon: "flag"
 ---
 
-`onMarker()` listens for a named `KeyframeMarker` inside an animation track and fires your callback each time the playhead crosses it. Use it to synchronise gameplay events — hit detection, sound effects, particle bursts, screen shake — precisely with a specific frame of an animation rather than relying on timers.
+`onMarker()` listens for a named `KeyframeMarker` inside an animation track and fires your callback each time the playhead crosses it. Use it to synchronise gameplay events — hit detection, sound effects, particle bursts, screen shake — precisely with a specific frame of an animation rather than relying on timers. Because the connection is made against a live `AnimationTrack`, the animation **must already be playing** before you call this method.
 
 ## Signature
 
@@ -25,11 +25,11 @@ AnimationService:onMarker(
 </ParamField>
 
 <ParamField body="id" type="string" required>
-  The animation ID string whose track you want to listen to.
+  The animation ID string (key from `init()`) whose track you want to listen to.
 </ParamField>
 
 <ParamField body="marker" type="string" required>
-  The exact name of the `KeyframeMarker` as set in the Roblox Animation Editor. The lookup is case-sensitive.
+  The exact name of the `KeyframeMarker` as set in the Roblox Animation Editor. The lookup is case-sensitive — `"HitFrame"` and `"hitframe"` are different markers.
 </ParamField>
 
 <ParamField body="callback" type="function" required>
@@ -38,7 +38,7 @@ AnimationService:onMarker(
 
 ## Returns
 
-An `RBXScriptConnection` you can use to disconnect the listener manually, or `nil` if the track could not be found.
+An `RBXScriptConnection` you can use to disconnect the listener manually, or `nil` if the track could not be found (no error is raised).
 
 ## Example
 
@@ -51,7 +51,7 @@ AnimationService:init(character, {
   SwordSlash = "rbxassetid://111111111",
 })
 
--- Start the animation first so the track exists
+-- Start the animation FIRST so the track exists
 AnimationService:play(character, "SwordSlash")
 
 -- Then register the marker listener
@@ -66,8 +66,12 @@ AnimationService:onMarker(character, "SwordSlash", "HitFrame", function()
 end)
 ```
 
+<Warning>
+  The animation **must already be playing** before you call `onMarker()`. If the track has not been started yet, the method returns `nil` without connecting anything — no error is raised. Always call `play()` first.
+</Warning>
+
 <Note>
-  The animation **must already be playing** before you call `onMarker()`. If the track has not been started yet, `getAnim()` returns `nil` and `onMarker()` returns `nil` without connecting anything. Always call `play()` first.
+  The marker name must **exactly match** what was set in the Roblox Animation Editor, including capitalisation. A mismatch silently results in a connection that never fires.
 </Note>
 
 <Note>

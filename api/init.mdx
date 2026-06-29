@@ -1,11 +1,11 @@
 ---
-title: "AnimationService.init() — Create an EZAnim Service Instance"
+title: "AnimationService.init() — Create a Service Instance"
 sidebarTitle: "init()"
-description: "AnimationService.init() constructs a new EZAnim instance with your animation list. Call this once and share the result across your scripts."
+description: "AnimationService.init() constructs a new EZAnim instance with your animation list. Call this once and share the result across all scripts."
 icon: "square-plus"
 ---
 
-`AnimationService.init()` is the constructor for EZAnim. It creates a new service instance and registers your named animation list, returning an object you can pass around to every script that needs to play, stop, or blend animations. Call it exactly once — typically inside a shared ModuleScript — and store the result so all consumers share the same internal state.
+`AnimationService.init()` is the constructor for EZAnim. It creates a new service instance and registers your named animation list, returning an object you can pass around to every script that needs to play, stop, or blend animations. Call it exactly once — typically inside a shared ModuleScript — and store the result so all consumers share the same state.
 
 ## Signature
 
@@ -32,7 +32,7 @@ A new `AnimationService` instance. Store this in a ModuleScript and require it f
 ## Example
 
 ```lua
--- AnimationService/init.server.luau  (or a shared ModuleScript)
+-- SharedModules/AnimService.lua  (a ModuleScript)
 local EZAnim = require(game.ServerScriptService.EZAnim)
 
 local AnimService = EZAnim.init({
@@ -50,11 +50,11 @@ return AnimService
 Then, in any other script:
 
 ```lua
-local AnimService = require(game.ServerScriptService.AnimationService)
+local AnimService = require(game.ServerScriptService.AnimService)
 
 game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
-        AnimService:play(character, "Idle", "core", true)
+        AnimService:play(character, "Idle", "Idle", true)
     end)
 end)
 ```

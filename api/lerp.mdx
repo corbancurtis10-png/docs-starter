@@ -1,8 +1,8 @@
 ---
-title: "AnimationService:lerp() — Frame-by-Frame Position and CFrame Interpolation"
+title: "lerp() — Frame-Level Position and CFrame Interpolation"
 sidebarTitle: "lerp()"
-description: "lerp() interpolates a BasePart's Position or CFrame each Heartbeat frame over a set duration, with an optional custom easing function."
-icon: "route"
+description: "lerp() interpolates a BasePart or Model from one Vector3 or CFrame to another on every Heartbeat frame, with an optional custom easing function."
+icon: "code"
 ---
 
 `lerp()` moves a `BasePart` or `Model` from one position or orientation to another by interpolating the value on every `Heartbeat` frame over a fixed duration. Unlike `tween()`, which delegates to `TweenService`, `lerp()` gives you direct per-frame control and accepts a custom `alphaFn` so you can apply any easing curve you like — including ones that aren't available in `Enum.EasingStyle`. The returned `RBXScriptConnection` disconnects automatically once the duration has elapsed, but you can disconnect it early to cancel mid-flight.
@@ -55,12 +55,12 @@ it manually at any time to cancel the animation early.
 
 The property that gets set depends on the types you pass and the class of `instance`:
 
-| `fromValue` / `toValue` type | Instance type             | Property set                    |
-| ---------------------------- | ------------------------- | ------------------------------- |
-| `Vector3`                    | `BasePart`                | `instance.Position`             |
-| `Vector3`                    | `Model` (with PrimaryPart)| `instance:PivotTo(CFrame.new(value))` |
-| `CFrame`                     | `BasePart`                | `instance.CFrame`               |
-| `CFrame`                     | `Model`                   | `instance:PivotTo(value)`       |
+| `fromValue` / `toValue` type | Instance type              | Property set                          |
+| ---------------------------- | -------------------------- | ------------------------------------- |
+| `Vector3`                    | `BasePart`                 | `instance.Position`                   |
+| `Vector3`                    | `Model` (with PrimaryPart) | `instance:PivotTo(CFrame.new(value))` |
+| `CFrame`                     | `BasePart`                 | `instance.CFrame`                     |
+| `CFrame`                     | `Model`                    | `instance:PivotTo(value)`             |
 
 ## Example
 
@@ -87,6 +87,12 @@ task.delay(1, function()
     conn:Disconnect()
 end)
 ```
+
+<Note>
+  When passing `Vector3` values to move a `Model`, the model must have a
+  `PrimaryPart` set. Without it, the `Vector3` path is skipped silently. Use
+  a `CFrame` value instead if your model does not have a `PrimaryPart`.
+</Note>
 
 <Note>
   If `fromValue` and `toValue` are different types — for example, a `Vector3`

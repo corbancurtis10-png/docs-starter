@@ -1,5 +1,5 @@
 ---
-title: "Tweening and Lerping with EZAnim's Motion Helpers"
+title: "Tweening and Lerping with EZAnim's Motion Utilities"
 sidebarTitle: "Motion Helpers"
 description: "EZAnim includes tween and lerp utilities for moving Roblox parts and models — use them alongside animations for polished combined effects."
 ---
@@ -67,10 +67,10 @@ end)
 
 </CodeGroup>
 
-The optional `alphaFn` parameter receives the raw linear alpha (0 → 1) and must return a remapped alpha in the same range. Any mathematical curve works — you are not limited to built-in easing styles.
+The optional `alphaFn` parameter receives the raw linear alpha (a value from 0 → 1) and must return a remapped alpha in the same 0 → 1 range. If omitted, `lerp()` defaults to a linear function (`function(a) return a end`). Any mathematical curve works — you are not limited to built-in easing styles.
 
 <Note>
-  `lerp()` returns the `Heartbeat` connection it creates internally. If you need to cancel the movement before it completes — for example, because the character was teleported or the object was destroyed — call `:Disconnect()` on the returned connection.
+  `lerp()` returns the `RBXScriptConnection` it creates internally to drive the interpolation. If you need to cancel the movement before it completes — for example, because the character was teleported or the object was destroyed — call `:Disconnect()` on the returned connection.
 
   ```lua
   local connection = Anim:lerp(part, part.Position, destination, 3)
@@ -92,6 +92,7 @@ The real power of having motion helpers and animation helpers in the same servic
 
 ```lua
 -- Launch the character forward the instant the Attack animation hits "LaunchFrame"
+Anim:play(character, "Attack", "Action", false)
 Anim:onMarker(character, "Attack", "LaunchFrame", function()
     local root   = character.HumanoidRootPart
     local target = root.CFrame * CFrame.new(0, 0, -20)  -- 20 studs forward

@@ -1,11 +1,11 @@
 ---
 title: "AnimationService:resume() — Resume a Paused Animation"
 sidebarTitle: "resume()"
-description: "resume() restores a paused animation to its original playback speed, picking up from exactly the frame where it was paused."
+description: "resume() restores a frozen animation to its original speed, continuing from the frame it was paused at. Falls back to speed 1 if not previously paused."
 icon: "play"
 ---
 
-`AnimationService:resume()` restores a previously paused animation to its original playback speed. It reads the `PausedSpeed` attribute that `pause()` stored on the track and calls `AdjustSpeed()` with that value, causing the animation to continue seamlessly from the frame at which it was frozen. No blending or reloading occurs — the track simply starts moving again.
+`AnimationService:resume()` restores a previously paused animation to its original playback speed, causing the animation to continue seamlessly from the frame at which it was frozen. No blending or reloading occurs — the track simply starts moving again. If `pause()` was never called beforehand, `resume()` sets the speed to `1` rather than throwing an error, so calling it on an already-playing or unpaused track is safe.
 
 ## Signature
 
@@ -24,8 +24,8 @@ AnimationService:resume(
 
 <ParamField body="id" type="string" required>
   The key of the animation to resume, as registered in your `init()` list.
-  The track must be currently loaded and in a paused state (speed set to
-  zero by a previous `pause()` call).
+  The track must be currently loaded (i.e. `play()` must have been called
+  for this `id` on this model).
 </ParamField>
 
 ## Returns
@@ -38,7 +38,7 @@ AnimationService:resume(
 local AnimService = require(game.ServerScriptService.AnimationService)
 
 -- Pause during a cutscene
-AnimService:play(character, "Idle", "core", true)
+AnimService:play(character, "Idle", "Idle", true)
 AnimService:pause(character, "Idle")
 
 task.wait(3) -- cutscene runs for 3 seconds
@@ -48,8 +48,9 @@ AnimService:resume(character, "Idle")
 ```
 
 <Note>
-  If `pause()` was never called before `resume()`, the `PausedSpeed` attribute
-  will not exist on the track. In that case EZAnim falls back to a speed of
-  `1`, so the animation will resume at normal speed rather than throwing an
-  error.
+  If `pause()` was never called before `resume()`, EZAnim falls back to a
+  speed of `1`, so the animation will play at normal speed rather than
+  throwing an error. This means calling `resume()` on a track that was never
+  paused is safe but will snap it to speed `1` if it was playing at a
+  different speed.
 </Note>

@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:destroy() — Clean Up a Model's Animation Data"
+title: "AnimationService:destroy() — Free a Model's Animation Data"
 sidebarTitle: "destroy()"
-description: "destroy() stops all playing tracks and removes all internal references for a model, preventing memory leaks when a character leaves the game."
+description: "destroy() stops all playing tracks and removes all cached data for a model, preventing memory leaks when a character leaves the game."
 icon: "trash"
 ---
 
-`AnimationService:destroy()` performs a full cleanup of every animation track, connection, and cached object that EZAnim holds for a given model. Call it whenever a character is removed or a model is destroyed so that the service's internal tables don't hold stale references that would otherwise leak memory over the lifetime of your server.
+`AnimationService:destroy()` performs a full cleanup of every animation track, connection, and cached object that EZAnim holds for a given model. Call it whenever a character is removed or a model is destroyed so that the service does not hold stale references that would otherwise leak memory over the lifetime of your server.
 
 ## Signature
 
@@ -23,7 +23,7 @@ AnimationService:destroy(model: Model): nil
 
 ## Returns
 
-`nil`. All side effects are internal — tracks are stopped, connections are disconnected, and the model's entry is removed from every internal table.
+`nil`. All playing tracks are stopped, all event connections are disconnected, and the model's entry is removed from every EZAnim table.
 
 ## Example
 
@@ -32,27 +32,26 @@ local AnimService = require(game.ServerScriptService.AnimationService)
 
 game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
-        AnimService:play(character, "Idle", "core", true)
+        AnimService:play(character, "Idle", "Idle", true)
     end)
 
     player.CharacterRemoving:Connect(function(character)
-        -- Stop all tracks and free every internal reference for this character
+        -- Stop all tracks and free every reference for this character
         AnimService:destroy(character)
     end)
 end)
 ```
 
 <Note>
-  EZAnim also internally listens for `AncestryChanged` on each model and
-  triggers the same cleanup automatically when a model's parent is set to
-  `nil`. Calling `destroy()` yourself in `CharacterRemoving` is still
-  recommended so cleanup happens synchronously before the model is garbage-
-  collected.
+  EZAnim also listens for `AncestryChanged` on each model and triggers the
+  same cleanup automatically when a model's parent is set to `nil`. Calling
+  `destroy()` yourself in `CharacterRemoving` is still recommended so cleanup
+  happens synchronously before the model is garbage-collected.
 </Note>
 
 <Warning>
   Do not call any animation methods (`play`, `pause`, `resume`, etc.) on a
-  model after calling `destroy()`. The internal tables for that model will
-  have been cleared, so subsequent calls will silently no-op or produce
-  unexpected behaviour.
+  model after calling `destroy()`. All data for that model will have been
+  cleared, so subsequent calls will silently no-op or produce unexpected
+  behaviour.
 </Warning>

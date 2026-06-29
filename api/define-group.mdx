@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:defineGroup() — Register a Named Animation Group"
+title: "defineGroup() — Register a Named Animation Group"
 sidebarTitle: "defineGroup()"
 description: "defineGroup() registers a named list of animation IDs as a group. Use playGroup() to play a random member — ideal for combat variety and idle fidgets."
 icon: "object-group"
 ---
 
-`defineGroup()` stores a named list of animation ID strings in the service so that `playGroup()` can later pick a random entry from it. Grouping animations is the fastest way to add natural variety to repeated actions — attacks, idles, footsteps, and taunts all benefit from a small pool of alternatives.
+`defineGroup()` stores a named list of animation ID strings in the service so that `playGroup()` can later pick a random entry from it. Grouping animations is the fastest way to add natural variety to repeated actions — attacks, idles, footsteps, and taunts all benefit from a small pool of alternatives. Groups are **global to the service instance**, not per-model, so you define them once and reuse them across any model that has been initialised with the relevant IDs.
 
 ## Signature
 
@@ -20,7 +20,7 @@ AnimationService:defineGroup(name: string, list: table): nil
 </ParamField>
 
 <ParamField body="list" type="table" required>
-  An array of animation ID strings. Every ID in this list must already exist in the animation list you passed to `init()` for any model you intend to play the group on.
+  An array of animation ID strings. Each entry must be a **key from the `List` table** you passed to `init()` — for example `"Attack1"` — not a raw `rbxassetid://` string. Every key in this array must exist in the `init()` list of any model you intend to play the group on.
 </ParamField>
 
 ## Returns
@@ -45,6 +45,7 @@ AnimationService:init(character, {
 })
 
 -- Register groups once, after init()
+-- Pass the string keys that appear in the init() List above
 AnimationService:defineGroup("Attacks",   { "Attack1", "Attack2", "Attack3" })
 AnimationService:defineGroup("Idles",     { "Idle1", "Idle2" })
 AnimationService:defineGroup("Footsteps", { "Footstep1", "Footstep2" })
@@ -54,7 +55,7 @@ AnimationService:playGroup(character, "Attacks")
 ```
 
 <Note>
-  Groups are **global to the service instance**, not per-model. A group you define applies to any model you pass to `playGroup()`, provided that model was initialised with the relevant IDs.
+  Groups are **global to the service instance**, not per-model. A group you define applies to any model you pass to `playGroup()`, provided that model was initialised with the relevant keys.
 </Note>
 
 <Note>

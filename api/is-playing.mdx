@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:isPlaying() — Check if an Animation Is Active"
+title: "isPlaying() — Check if an Animation Is Currently Active"
 sidebarTitle: "isPlaying()"
 description: "isPlaying() returns true if the named animation is currently playing on the model, letting you guard against double-playing or build state logic."
 icon: "circle-check"
 ---
 
-`isPlaying()` checks whether a specific animation track is currently active on a model. Use it as a lightweight guard before calling `play()` to avoid restarting an animation mid-playback, or to drive UI indicators and state machines that need to reflect what is currently running.
+`isPlaying()` checks whether a specific animation track is currently active on a model. Use it as a lightweight guard before calling `play()` to avoid restarting an animation mid-playback, or to drive UI indicators and state machines that need to reflect what is currently running. When the track has never been played on this model, or when it exists but is not active, the method returns `false` — never `nil`.
 
 ## Signature
 
@@ -20,12 +20,12 @@ AnimationService:isPlaying(model: Model, id: string): boolean
 </ParamField>
 
 <ParamField body="id" type="string" required>
-  The animation ID string to query. Must match an ID registered with the service for this model.
+  The animation ID string (key from `init()`) to query.
 </ParamField>
 
 ## Returns
 
-`true` if the animation is currently playing, `false` if it is not playing or if the track has never been loaded for this model.
+`true` if the animation is currently playing, `false` if it is not playing — including when the track has never been loaded for this model. This method always returns a `boolean`, never `nil`.
 
 ## Example
 
@@ -57,3 +57,7 @@ runService.RenderStepped:Connect(function()
     or  Color3.fromRGB(80,  80,  80)   -- grey when idle
 end)
 ```
+
+<Note>
+  `isPlaying()` always returns a `boolean`. It returns `false` — not `nil` — when the animation track has never been played on this model, making it safe to use directly in `if` expressions without a nil check.
+</Note>

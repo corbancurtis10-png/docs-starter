@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:getState() — Read a Model's Current Animation State"
+title: "getState() — Read a Model's Current Animation State"
 sidebarTitle: "getState()"
-description: "getState() returns the string state previously set on a model with setState(), or nil if no state has been assigned."
+description: "getState() returns the string last set by setState() on this model, or nil if no state has been assigned or if reset() was called and cleared it."
 icon: "magnifying-glass"
 ---
 
-`getState()` retrieves the state string most recently stored against a model by `setState()`. Use it anywhere in your scripts to read the model's current animation state and make decisions — such as whether to block a new animation, trigger a sound effect, or update a UI element.
+`getState()` retrieves the state string most recently stored against a model by `setState()`. Use it anywhere in your scripts to read the model's current animation state and make decisions — such as whether to block a new animation, trigger a sound effect, or update a UI element. If no state has ever been set on this model, or if `reset()` has been called since the last `setState()`, the method returns `nil`.
 
 ## Signature
 
@@ -21,7 +21,7 @@ AnimationService:getState(model: Model): string | nil
 
 ## Returns
 
-A `string` containing the state name set by `setState()`, or `nil` if no state has been assigned to this model yet (or after `reset()` clears it).
+A `string` containing the state name set by `setState()`, or `nil` if no state has been assigned to this model yet or if `reset()` has cleared it.
 
 ## Example
 
@@ -48,3 +48,7 @@ runService.Heartbeat:Connect(function()
   debugLabel.Text = "Anim State: " .. tostring(state)
 end)
 ```
+
+<Note>
+  `getState()` returns `nil` in two situations: the model has never had a state assigned, or `reset()` was called after the last `setState()`. Always use `tostring()` if you intend to concatenate the result with a string.
+</Note>

@@ -5,7 +5,7 @@ description: "pause() freezes a playing animation at its current frame by settin
 icon: "pause"
 ---
 
-`AnimationService:pause()` freezes a playing animation at its current frame without stopping or unloading the track. It works by storing the track's current speed as an attribute and then calling `AdjustSpeed(0)`, which halts playback in place. Because the track remains loaded and active, you can resume it at any time with `resume()` and it will continue from exactly where it left off.
+`AnimationService:pause()` freezes a playing animation at its current frame without stopping or unloading the track. Playback halts in place, but the track remains loaded and active. You can resume it at any time with `resume()` and it will continue from exactly where it left off, at the same speed it had before being paused.
 
 ## Signature
 
@@ -42,7 +42,7 @@ local function onStunApplied(character)
     AnimService:pause(character, "Walk")
 
     -- Play a separate stun overlay animation at higher priority
-    AnimService:play(character, "Stun", "action", false, 0.1)
+    AnimService:play(character, "Stun", "Action", false, 0.1)
 end
 
 local function onStunEnded(character)
@@ -53,11 +53,10 @@ end
 ```
 
 <Note>
-  The original playback speed is stored as a `PausedSpeed` attribute on the
-  track itself. When you call `resume()`, EZAnim reads this attribute and
-  restores the exact speed the track had before it was paused — including any
-  speed adjustments you made with Roblox's native `AdjustSpeed` API prior to
-  calling `pause()`.
+  EZAnim records the track's current playback speed before freezing it. When
+  you call `resume()`, the animation is restored to that exact speed —
+  including any speed adjustments you made with Roblox's native `AdjustSpeed`
+  API prior to calling `pause()`.
 </Note>
 
 <Warning>

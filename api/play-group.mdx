@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:playGroup() — Play a Random Animation From a Group"
+title: "playGroup() — Play a Random Animation From a Group"
 sidebarTitle: "playGroup()"
-description: "playGroup() selects a random animation ID from a defined group and plays it on the model, using default playback parameters."
+description: "playGroup() picks a random animation from a named group and plays it at Movement priority, non-looped, 0.15s fade. Returns nil if the group is not defined."
 icon: "shuffle"
 ---
 
-`playGroup()` picks a random animation ID from a group previously registered with `defineGroup()` and plays it on the given model using the service's default playback settings. It is the quickest way to introduce natural variation into repeated actions without writing your own random-selection logic.
+`playGroup()` picks a random animation ID from a group previously registered with `defineGroup()` and plays it on the given model. Internally it calls `play()` with fixed default parameters — `Movement` priority, non-looping, and a `0.15s` fade-in — so the result is identical to calling `play()` yourself with those same settings. It is the quickest way to introduce natural variation into repeated actions without writing your own random-selection logic.
 
 ## Signature
 
@@ -16,7 +16,7 @@ AnimationService:playGroup(model: Model, groupName: string): AnimationTrack | ni
 ## Parameters
 
 <ParamField body="model" type="Model" required>
-  The character or object to play the animation on. The model must have been initialised with `init()` and must include all IDs that belong to the target group.
+  The character or object to play the animation on. The model must have been initialised with `init()` and must include all ID keys that belong to the target group.
 </ParamField>
 
 <ParamField body="groupName" type="string" required>
@@ -49,7 +49,7 @@ end)
 ```
 
 <Note>
-  `playGroup()` uses the service's default playback parameters — `Movement` priority, non-looping, with a `0.15 s` fade-in. If you need custom priority, looping, or a different fade time, retrieve a random ID yourself and call `play()` directly with the options you need.
+  `playGroup()` always uses fixed default playback parameters: `Movement` priority, non-looping, with a `0.15s` fade-in. If you need custom priority, looping, or a different fade time, retrieve a random ID yourself and call `play()` directly with the options you need.
 </Note>
 
 <Warning>

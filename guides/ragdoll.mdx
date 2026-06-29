@@ -1,20 +1,10 @@
 ---
-title: "Ragdoll Physics for Roblox Characters with EZAnim"
+title: "Ragdoll Physics for Roblox Characters — EZAnim Guide"
 sidebarTitle: "Ragdoll"
-description: "Learn how to enable and disable ragdoll physics on any Roblox Humanoid character using EZAnim, with optional automatic recovery."
+description: "Learn how to enable and disable ragdoll physics on any Roblox Humanoid character using EZAnim, with optional timed automatic recovery."
 ---
 
-EZAnim's ragdoll system converts any Humanoid rig into a fully physics-driven ragdoll at runtime — no pre-built rig modifications required. It disables every `Motor6D` joint in the character, replaces each one with a `BallSocketConstraint` anchored by matching `Attachment` instances, and sets the `Humanoid` state to `Physics` so Roblox's physics engine takes over completely. Calling `unragdoll()` reverses the process and walks the character back upright.
-
-## How it works
-
-When you call `ragdoll()`, EZAnim:
-
-1. Calls `Humanoid:ChangeState(Enum.HumanoidStateType.Physics)` to hand control to the physics engine.
-2. Sets `PlatformStand = true` and `AutoRotate = false` so the Humanoid stops fighting the simulation.
-3. Iterates every `Motor6D` descendant, creates two `Attachment` instances (inheriting `C0`/`C1` offsets), connects them with a `BallSocketConstraint`, and disables the `Motor6D`.
-
-When you call `unragdoll()`, EZAnim re-enables the stored `Motor6D` joints, destroys the temporary constraints and attachments, restores `PlatformStand` and `AutoRotate`, and transitions the Humanoid to `GettingUp`.
+EZAnim's ragdoll system converts any Humanoid rig into a fully physics-driven ragdoll at runtime — no pre-built rig modifications required. Calling `ragdoll()` hands control of the character over to Roblox's physics engine so the body collapses naturally under gravity and collision forces. Calling `unragdoll()` reverses the process and walks the character back upright.
 
 <Steps>
 
@@ -41,7 +31,7 @@ end)
 
 <Step title="Use automatic recovery with a duration">
 
-Pass a number of seconds as the second argument to `ragdoll()`. EZAnim internally calls `task.delay()` and invokes `unragdoll()` automatically after that time, so you do not have to track the timer yourself.
+Pass a number of seconds as the second argument to `ragdoll()`. EZAnim automatically calls `unragdoll()` after that time, so you do not have to track the timer yourself.
 
 ```lua
 -- Ragdoll for 3 seconds, then automatically recover
@@ -81,5 +71,5 @@ After this call the Humanoid automatically transitions to `GettingUp`, so the ch
 </Steps>
 
 <Warning>
-  Never call `ragdoll()` twice on the same character without calling `unragdoll()` first. The joint data that EZAnim stores for recovery is overwritten on each `ragdoll()` call, so the first set of `Motor6D` references is lost. This makes it impossible to cleanly restore the rig and can leave orphaned constraints in the character hierarchy.
+  Never call `ragdoll()` twice on the same character without calling `unragdoll()` first. The joint data EZAnim stores for recovery is overwritten on each `ragdoll()` call, so the original joint references are lost. This makes it impossible to cleanly restore the rig and can leave orphaned constraints in the character hierarchy.
 </Warning>

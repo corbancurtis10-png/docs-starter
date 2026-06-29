@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:unragdoll() — Restore a Ragdolled Character"
+title: "unragdoll() — Recover a Character from Ragdoll Physics"
 sidebarTitle: "unragdoll()"
-description: "unragdoll() re-enables all Motor6D joints, removes BallSocketConstraints, and returns the Humanoid to the GettingUp state after a ragdoll."
-icon: "person-walking"
+description: "unragdoll() re-enables Motor6D joints, removes BallSocketConstraints, and transitions the Humanoid to GettingUp to restore a ragdolled character."
+icon: "person-falling"
 ---
 
-`unragdoll()` reverses everything that `ragdoll()` did. It re-enables the stored `Motor6D` joints, destroys the `BallSocketConstraint` and `Attachment` instances that were created during ragdolling, and restores the `Humanoid` to its normal standing state. Once called, the character transitions to `Enum.HumanoidStateType.GettingUp`, which plays the standard get-up animation and hands control back to the player or NPC.
+`unragdoll()` reverses everything that `ragdoll()` did. It re-enables the saved `Motor6D` joints, destroys the `BallSocketConstraint` and `Attachment` instances that were created during ragdolling, and restores the `Humanoid` to its normal standing state. Once called, the character transitions to `Enum.HumanoidStateType.GettingUp`, which plays the standard get-up animation and hands control back to the player or NPC.
 
 ## Signature
 
@@ -29,11 +29,11 @@ AnimationService:unragdoll(model)
 
 When you call `unragdoll()`, the following steps happen in order:
 
-1. **Re-enable joints** — Every `Motor6D` reference stored during `ragdoll()` is re-enabled by setting `motor.Enabled = true`.
+1. **Re-enable joints** — Every `Motor6D` that was disabled by `ragdoll()` is re-enabled, restoring the character's skeleton.
 2. **Destroy physics objects** — All `BallSocketConstraint` and `Attachment` instances added by `ragdoll()` are located via `GetDescendants()` and destroyed, cleaning up the constraint rig entirely.
 3. **Restore Humanoid properties** — `PlatformStand` is set back to `false` and `AutoRotate` is set back to `true`, allowing the character to stand and self-orient again.
 4. **Transition to GettingUp** — `humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)` is called, triggering the built-in get-up animation and resuming normal Humanoid behaviour.
-5. **Clear internal state** — The model's entry in the internal ragdoll table is set to `nil` so the model is ready to be ragdolled again cleanly.
+5. **Reset tracking** — The model is marked as no longer ragdolled so it is ready to be ragdolled again cleanly in the future.
 
 ## Example
 

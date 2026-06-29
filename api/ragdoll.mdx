@@ -1,7 +1,7 @@
 ---
-title: "AnimationService:ragdoll() — Enable Physics Ragdoll on a Character"
+title: "ragdoll() — Apply Physics-Based Ragdoll to a Character"
 sidebarTitle: "ragdoll()"
-description: "ragdoll() disables all Motor6D joints on a Humanoid model and replaces them with BallSocketConstraints, enabling full physics-based ragdoll."
+description: "ragdoll() disables all Motor6D joints on a Humanoid model and replaces them with BallSocketConstraints, making the character go fully limp."
 icon: "person-falling"
 ---
 
@@ -24,7 +24,7 @@ AnimationService:ragdoll(model, duration)
 <ParamField path="duration" type="number" optional>
   If provided, `ragdoll()` schedules an automatic call to `unragdoll()` after
   this many seconds using `task.delay`. Omit this parameter if you want to
-  control recovery manually.
+  control recovery manually by calling `unragdoll()` yourself.
 </ParamField>
 
 ## Returns
@@ -37,7 +37,7 @@ When you call `ragdoll()`, the following steps happen in order:
 
 1. **Humanoid state** — The `Humanoid` is set to `Enum.HumanoidStateType.Physics`, which disables normal locomotion and hands full movement control to the physics engine.
 2. **Platform stand** — `PlatformStand` is set to `true` and `AutoRotate` is set to `false` so the character cannot self-right or rotate toward the camera.
-3. **Joint replacement** — Every `Motor6D` descendant is located, its reference is saved internally, and the motor is disabled. A pair of `Attachment` instances (positioned at `C0` and `C1`) is created on the two connected parts, and a `BallSocketConstraint` linking those attachments is parented to `Part0`. This preserves the joint positions while allowing free rotation.
+3. **Joint replacement** — Every `Motor6D` descendant is located and disabled. A pair of `Attachment` instances (positioned at `C0` and `C1`) is created on the two connected parts, and a `BallSocketConstraint` linking those attachments is parented to `Part0`. This preserves the joint positions while allowing free rotation.
 4. **Auto-recovery** — If `duration` was supplied, `task.delay(duration, ...)` is used to call `unragdoll()` after the specified time.
 
 ## Example
@@ -65,7 +65,7 @@ end)
 
 <Warning>
   Do **not** call `ragdoll()` twice on the same model without calling
-  `unragdoll()` first. The internal joint table will be overwritten, making it
+  `unragdoll()` first. The joint tracking will be overwritten, making it
   impossible to correctly restore the original `Motor6D` connections on
   recovery.
 </Warning>

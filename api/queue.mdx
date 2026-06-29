@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:queue() — Enqueue an Animation for Sequential Playback"
+title: "queue() — Queue an Animation for Sequential Play"
 sidebarTitle: "queue()"
 description: "queue() appends an animation ID to a model's FIFO queue. The queued animation plays automatically when the current non-looping track finishes."
 icon: "list"
 ---
 
-`queue()` appends an animation ID to a model's internal FIFO queue. When the currently playing non-looping track fires its `Stopped` signal, the service automatically dequeues the next ID and plays it — letting you chain animations without writing manual `Stopped` listeners.
+`queue()` appends an animation ID to a model's FIFO queue. When the currently playing non-looping track fires its `Stopped` signal, the service automatically dequeues the next ID and plays it — letting you chain animations without writing manual `Stopped` listeners. Calling `queue()` alone does **not** start playback; you must call `play()` on the first animation yourself to get the chain running.
 
 ## Signature
 
@@ -20,7 +20,7 @@ AnimationService:queue(model: Model, id: string): nil
 </ParamField>
 
 <ParamField body="id" type="string" required>
-  The animation ID string to enqueue. Must match an ID registered with the service for this model.
+  The animation ID string to enqueue. Must be a key that exists in the `List` you passed to `init()` for this model.
 </ParamField>
 
 ## Returns
@@ -29,7 +29,7 @@ AnimationService:queue(model: Model, id: string): nil
 
 ## Example
 
-The following example plays a three-hit melee combo. `Attack1` starts immediately; `Attack2` and `Attack3` are queued and play sequentially as each previous track finishes.
+The following example plays a three-hit melee combo. `Attack1` starts immediately via `play()`; `Attack2` and `Attack3` are queued and play sequentially as each previous track finishes.
 
 ```lua
 local AnimationService = require(game.ReplicatedStorage.EZAnim)
@@ -41,11 +41,15 @@ AnimationService:init(character, {
   Attack3 = "rbxassetid://333333333",
 })
 
--- Play the first hit, then enqueue the follow-ups
+-- Start the first hit immediately, then enqueue the follow-ups
 AnimationService:play(character, "Attack1")
 AnimationService:queue(character, "Attack2")
 AnimationService:queue(character, "Attack3")
 ```
+
+<Note>
+  `queue()` only appends to the queue — it does **not** start playback on its own. You must call `play()` on the first animation to kick off the chain. Once that non-looping track's `Stopped` signal fires, the service will automatically dequeue and play the next entry.
+</Note>
 
 <Note>
   `queue()` only works with **non-looping** animations. Looping tracks never fire `Stopped`, so the queue is never drained and subsequent entries will not play.

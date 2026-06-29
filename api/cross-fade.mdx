@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:crossFade() — Smoothly Transition Between Animations"
+title: "AnimationService:crossFade() — Fade Between Two Animations"
 sidebarTitle: "crossFade()"
 description: "crossFade() stops one animation and immediately starts another using the same fade duration, creating a smooth blend between two tracks."
 icon: "shuffle"
 ---
 
-`AnimationService:crossFade()` transitions smoothly from one animation to another by fading the first track out and the second track in over the same duration. Internally it calls `stop(model, fromId, time)` followed immediately by `play(model, toId, nil, false, time)`, so both fades are in progress simultaneously and Roblox's animation blending system handles the interpolation. This makes it ideal for locomotion state machines, where a jarring cut between states would be noticeable.
+`AnimationService:crossFade()` transitions smoothly from one animation to another by fading the first track out and the second track in over the same duration. It calls `stop(model, fromId, time)` followed immediately by `play(model, toId, nil, false, time)`, so both fades are in progress simultaneously and Roblox's animation blending system handles the interpolation. This makes it ideal for locomotion state machines, where a jarring cut between states would be noticeable.
 
 ## Signature
 
@@ -61,14 +61,22 @@ end
 transitionTo(character, "Idle", 0.3)
 
 task.wait(1)
-transitionTo(character, "Walk", 0.35)   -- gentle blend into walk
+transitionTo(character, "Walk", 0.35)  -- gentle blend into walk
 
 task.wait(2)
-transitionTo(character, "Run",  0.3)    -- smooth acceleration blend
+transitionTo(character, "Run",  0.3)   -- smooth acceleration blend
 
 task.wait(3)
-transitionTo(character, "Idle", 0.4)    -- slow, satisfying deceleration back to idle
+transitionTo(character, "Idle", 0.4)   -- slow, satisfying deceleration back to idle
 ```
+
+<Note>
+  The incoming animation (`toId`) always plays at **Movement** priority and
+  is **non-looping**. This is because `crossFade()` calls `play()` with
+  `animType = nil` (which defaults to `"Movement"`) and `looped = false`. If
+  you need the destination animation to loop or play at a different priority,
+  call `stop()` and `play()` directly instead.
+</Note>
 
 <Tip>
   Use a longer `time` value (0.3–0.5 s) for locomotion transitions such as

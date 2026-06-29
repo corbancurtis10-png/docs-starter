@@ -8,7 +8,7 @@ When you need a sequence of animations to play back-to-back — such as a multi-
 
 ## How the Queue Works
 
-Internally, every model has its own queue array. `queue(model, id)` appends an animation ID to the end of that array. When a non-looping animation finishes (its `Stopped` event fires), EZAnim automatically calls `_playNextInQueue()`, which shifts the first ID off the front of the array and plays it. This continues until the queue is empty.
+Every model has its own queue array. `queue(model, id)` appends an animation ID to the end of that array. When a non-looping animation finishes, EZAnim automatically picks the first ID off the front of the queue and plays it. This continues until the queue is empty.
 
 ```lua
 -- Play an attack combo
@@ -19,6 +19,20 @@ Anim:queue(character, "Attack3")
 ```
 
 You can queue any number of IDs before the first animation even finishes — they will drain in order.
+
+## Non-Looping Requirement
+
+The queue only advances when a non-looping animation stops. If you call `play()` with `looped = true`, the track will never naturally end on its own, so the queue will never drain. Always use `looped = false` for animations that are part of a queue sequence.
+
+```lua
+-- Correct: non-looping animations advance the queue
+Anim:play(character, "Attack1", "Action", false)
+Anim:queue(character, "Attack2")
+
+-- Incorrect: looping animation blocks the queue indefinitely
+Anim:play(character, "Attack1", "Action", true)  -- queue never drains
+Anim:queue(character, "Attack2")
+```
 
 ## Clearing the Queue
 
@@ -31,23 +45,22 @@ Anim:reset(character)
 
 This is useful when an external event — such as the character taking damage or dying — should immediately abort a combo in progress and transition to a different animation.
 
-## Combining Queue with onStopped
+## Returning to Idle After a Combo
 
-You can pair the queue system with `onStopped()` to run code after an entire combo finishes — for example, returning a character to their idle state once the last queued animation completes:
+A common pattern is to return a character to their idle animation once an entire queued sequence completes. Because the queue drains automatically and each animation plays non-looped, you can use `setState` and `getState` to track when the combo is finished and conditionally play the idle from your game logic:
 
 ```lua
+Anim:setState(character, "Combo")
 Anim:play(character, "Attack1", "Action", false)
 Anim:queue(character, "Attack2")
 Anim:queue(character, "Attack3")
 
-Anim:onStopped(character, "Attack3", function()
-    -- The full combo is done — return to idle
-    Anim:play(character, "Idle", "Idle", true)
-end)
+-- In your game loop or event, check when the combo state ends
+-- and return to idle once all queued animations have completed
 ```
 
 <Tip>
-  Combine the queue system with `onStopped()` to trigger events or state changes after an entire combo finishes, without needing to manually track which animation in the sequence is currently playing.
+  Combine the queue system with your own state flags (see the [State System](/concepts/state-system) page) to guard against new inputs while a combo is in progress, and to cleanly return to idle once the queue drains.
 </Tip>
 
 <Note>

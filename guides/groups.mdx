@@ -1,5 +1,5 @@
 ---
-title: "Animation Groups: Random Variation with EZAnim"
+title: "Animation Groups: Random Variation with EZAnim Service"
 sidebarTitle: "Groups"
 description: "Define named animation groups in EZAnim to play a random animation from a set — ideal for attack combos, footstep variations, and idle fidgets."
 ---
@@ -8,7 +8,9 @@ Repeating the same animation every time a player attacks, idles, or takes a step
 
 ## Defining and playing groups
 
-`defineGroup(name, list)` registers a named group on the service instance. The `list` parameter is a table of string keys that must correspond to entries you already provided in the `List` table passed to `init()`. Once defined, `playGroup(model, groupName)` selects a random key from that group and calls `play()` on it for the given model.
+`defineGroup(name, list)` registers a named group on the service instance. The `list` parameter is an array of animation ID strings that must correspond to entries you already provided in the `List` table passed to `init()`. Once defined, `playGroup(model, groupName)` selects a random ID from that group and calls `play()` for the given model.
+
+`playGroup()` uses `play()`'s default parameters: no explicit animation priority (the track's built-in priority applies), non-looping, and a 0.15-second fade-in time. Use `play()` directly if you need to override any of those defaults for a specific animation.
 
 ```lua
 local Anim = AnimationService.init({

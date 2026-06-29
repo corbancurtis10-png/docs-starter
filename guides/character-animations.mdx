@@ -1,7 +1,7 @@
 ---
-title: "Playing Character Animations with EZAnim"
+title: "Playing Character Animations with the EZAnim Service"
 sidebarTitle: "Character Animations"
-description: "A practical walkthrough of playing, cross-fading, pausing, and responding to animation events for Roblox characters using EZAnim."
+description: "Learn to play, cross-fade, pause, and respond to animation events for Roblox characters using EZAnim — with copy-paste examples."
 ---
 
 EZAnim gives you a single, consistent API for every stage of a character animation's lifecycle — from the first `play()` call through cross-fades, pauses, keyframe events, and final cleanup. This guide walks you through each step so you can build polished, responsive character motion with minimal boilerplate.
@@ -77,7 +77,14 @@ Pausing does not reset the animation's playback position, so the character will 
 
 Add named markers inside Roblox's Animation Editor to mark meaningful moments — a sword swing's impact frame, a footstep's contact point, the peak of a jump. EZAnim's `onMarker()` fires a callback exactly when playback reaches that marker.
 
+<Note>
+  `onMarker()` requires the animation to already be playing when you call it. Start the animation with `play()` first, then connect the marker listener — otherwise `onMarker()` will find no active track and return `nil`.
+</Note>
+
 ```lua
+-- Start the Attack animation first, then listen for the marker
+Anim:play(character, "Attack", "Action", false)
+
 -- "HitFrame" is a marker placed in the Attack animation in the Animation Editor
 Anim:onMarker(character, "Attack", "HitFrame", function()
     -- Spawn a hit VFX at the weapon's position
@@ -98,14 +105,18 @@ end)
 
 Use `onStopped()` to react when an animation finishes naturally — without polling or manually tracking time. This is ideal for actions that should unlock only after a full animation plays out, such as re-enabling player controls after a stun.
 
+<Note>
+  Like `onMarker()`, `onStopped()` requires the animation to already be playing. Call `play()` before you connect the listener so there is an active track to attach the event to.
+</Note>
+
 ```lua
+-- Play the stun animation first (non-looped)
+Anim:play(character, "Stun", "Action", false)
+
 -- Re-enable controls once the Stun animation finishes
 Anim:onStopped(character, "Stun", function()
     playerController:setEnabled(true)
 end)
-
--- Play the stun (non-looped) — onStopped fires when it ends
-Anim:play(character, "Stun", "Action", false)
 ```
 
 </Step>

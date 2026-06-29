@@ -1,7 +1,7 @@
 ---
-title: "AnimationService:stopAll() — Stop Every Animation on a Model"
+title: "AnimationService:stopAll() — Stop Every Animation"
 sidebarTitle: "stopAll()"
-description: "stopAll() is a convenience wrapper that stops all currently playing animation tracks on a model with an optional fade-out duration."
+description: "stopAll() stops all playing tracks on a model at once. It is exactly equivalent to stop(model, nil, fadeTime) with a clearer call-site intent."
 icon: "stop"
 ---
 
@@ -39,7 +39,7 @@ local AnimService = require(game.ServerScriptService.AnimationService)
 -- Stop all animations with a gentle 0.3s fade when a player is downed
 local function onPlayerDowned(character)
     AnimService:stopAll(character, 0.3)
-    AnimService:play(character, "Downed", "action", false)
+    AnimService:play(character, "Downed", "Action", false)
 end
 
 -- Instant stop on respawn
@@ -50,8 +50,8 @@ end
 
 <Note>
   `stopAll(model, fadeTime)` is exactly equivalent to calling
-  `stop(model, nil, fadeTime)`. Both code paths ultimately iterate over every
-  tracked entry for the model and call `:Stop(fadeTime)` on each track.
-  Prefer `stopAll()` for clarity at call sites where the intent is to clear
-  everything.
+  `stop(model, nil, fadeTime)`. Both produce the same result: every tracked
+  animation on the model is faded out and stopped. Prefer `stopAll()` at call
+  sites where the intent is to clear everything, so the purpose is
+  immediately obvious to other developers reading your code.
 </Note>

@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:getAnim() — Retrieve a Raw AnimationTrack"
+title: "getAnim() — Retrieve the Raw AnimationTrack for a Model"
 sidebarTitle: "getAnim()"
 description: "getAnim() returns the raw Roblox AnimationTrack for a named animation on a model, giving you direct access to track properties and signals."
 icon: "film"
 ---
 
-`getAnim()` returns the underlying Roblox `AnimationTrack` object that EZAnim holds for a specific animation on a model. This gives you direct access to every property and signal on the track — `TimePosition`, `Speed`, `WeightCurrent`, `DidLoop`, and more — that EZAnim does not expose through its own API.
+`getAnim()` returns the underlying Roblox `AnimationTrack` object that EZAnim holds for a specific animation on a model. This gives you direct access to every property and signal on the track — `TimePosition`, `Speed`, `WeightCurrent`, `DidLoop`, and more — that EZAnim does not expose through its own API. Tracks are created lazily the first time `play()` is called, so if you call `getAnim()` before ever playing the animation on this model, it returns `nil`.
 
 ## Signature
 
@@ -20,12 +20,12 @@ AnimationService:getAnim(model: Model, id: string): AnimationTrack | nil
 </ParamField>
 
 <ParamField body="id" type="string" required>
-  The animation ID string whose underlying track you want to retrieve.
+  The animation ID string (key from `init()`) whose underlying track you want to retrieve.
 </ParamField>
 
 ## Returns
 
-The `AnimationTrack` instance, or `nil` if the animation has never been played on this model (tracks are created lazily on first play).
+The `AnimationTrack` instance, or `nil` if the animation has **never been played** on this model. A track that has been played and then stopped is still returned — only tracks that were never played at all return `nil`.
 
 ## Example
 
@@ -60,9 +60,9 @@ end)
 ```
 
 <Note>
-  `getAnim()` returns `nil` if the animation has **never been played** on this model. Tracks are created lazily the first time `play()` is called, so always play the animation at least once before relying on this method.
+  `getAnim()` returns `nil` if the animation has **never been played** on this model. Tracks are created lazily the first time `play()` is called — simply having the ID registered in `init()` is not enough. A track that was played and later stopped is still accessible and will be returned.
 </Note>
 
 <Tip>
-  For simple active/inactive checks, prefer `isPlaying()` — it is more readable and handles the `nil` case for you. Reserve `getAnim()` for situations where you genuinely need track properties or signals that EZAnim does not expose directly.
+  For simple active/inactive checks, prefer `isPlaying()` — it is more readable, handles the `nil` case for you, and always returns a `boolean`. Reserve `getAnim()` for situations where you genuinely need track properties or signals that EZAnim does not expose directly.
 </Tip>

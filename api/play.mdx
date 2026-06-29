@@ -33,10 +33,10 @@ AnimationService:play(
 </ParamField>
 
 <ParamField body="animType" type="string">
-  The animation priority level as a case-insensitive string. Accepted values
-  mirror `Enum.AnimationPriority` names: `"core"`, `"idle"`, `"movement"`,
-  `"action"`, `"action2"`, `"action3"`, `"action4"`. Defaults to
-  `"movement"`.
+  The animation priority level. Accepted values are `"Idle"`, `"Movement"`,
+  `"Action"`, `"Action2"`, `"Action3"`, and `"Action4"` — matching
+  `Enum.AnimationPriority` names. The comparison is case-insensitive.
+  Defaults to `"Movement"`.
 </ParamField>
 
 <ParamField body="looped" type="boolean">
@@ -64,15 +64,15 @@ game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
 
         -- Looping idle — plays continuously at Movement priority
-        AnimService:play(character, "Idle", "movement", true)
+        AnimService:play(character, "Idle", "Movement", true)
 
         -- One-shot attack at Action priority with a snappy 0.05s fade-in
-        local attackTrack = AnimService:play(character, "Attack", "action", false, 0.05)
+        local attackTrack = AnimService:play(character, "Attack", "Action", false, 0.05)
 
         if attackTrack then
             attackTrack.Stopped:Connect(function()
                 -- Return to idle once the attack finishes
-                AnimService:play(character, "Idle", "movement", true)
+                AnimService:play(character, "Idle", "Movement", true)
             end)
         end
     end)

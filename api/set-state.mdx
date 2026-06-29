@@ -1,11 +1,11 @@
 ---
-title: "AnimationService:setState() — Tag a Model With an Animation State"
+title: "setState() — Tag a Model With an Animation State"
 sidebarTitle: "setState()"
 description: "setState() stores an arbitrary string against a model so your scripts can coordinate animation logic without external variables or RemoteEvents."
 icon: "tag"
 ---
 
-`setState()` attaches a named state string to a model inside the service. You can read it back anywhere with `getState()` and use it as a guard to prevent conflicting animations from playing — for example, blocking walk animations while a character is dead or stunned. EZAnim stores the value but does not enforce any rules on its own; the logic is entirely yours to write.
+`setState()` attaches a named state string to a model inside the service. You can read it back anywhere with `getState()` and use it as a guard to prevent conflicting animations from playing — for example, blocking walk animations while a character is dead or stunned. The state value is entirely arbitrary; EZAnim stores it as-is and does **not** interpret it, block animations based on it, or alter playback behaviour in any way. All guard logic is yours to write.
 
 ## Signature
 
@@ -20,7 +20,7 @@ AnimationService:setState(model: Model, state: string): nil
 </ParamField>
 
 <ParamField body="state" type="string" required>
-  An arbitrary state name, for example `"Idle"`, `"Dead"`, or `"Attacking"`. The string is stored as-is and is case-sensitive when read back.
+  An arbitrary state name, for example `"Idle"`, `"Dead"`, or `"Attacking"`. The string is stored as-is and is case-sensitive when read back with `getState()`.
 </ParamField>
 
 ## Returns
@@ -55,5 +55,5 @@ end)
 ```
 
 <Note>
-  EZAnim does **not** automatically block animations based on state. You are responsible for writing the guard logic, as shown in the example above. The state is simply a convenience store to avoid cluttering your scripts with external variables.
+  EZAnim does **not** automatically block or alter animations based on state. Setting a state never changes what is playing. You are responsible for writing the guard logic shown in the example above — the state is simply a convenience store to avoid cluttering your scripts with external variables.
 </Note>
