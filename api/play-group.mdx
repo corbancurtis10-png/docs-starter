@@ -1,0 +1,57 @@
+---
+title: "AnimationService:playGroup() — Play a Random Animation From a Group"
+sidebarTitle: "playGroup()"
+description: "playGroup() selects a random animation ID from a defined group and plays it on the model, using default playback parameters."
+icon: "shuffle"
+---
+
+`playGroup()` picks a random animation ID from a group previously registered with `defineGroup()` and plays it on the given model using the service's default playback settings. It is the quickest way to introduce natural variation into repeated actions without writing your own random-selection logic.
+
+## Signature
+
+```lua
+AnimationService:playGroup(model: Model, groupName: string): AnimationTrack | nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object to play the animation on. The model must have been initialised with `init()` and must include all IDs that belong to the target group.
+</ParamField>
+
+<ParamField body="groupName" type="string" required>
+  The name of an animation group previously created with `defineGroup()`. The lookup is case-sensitive.
+</ParamField>
+
+## Returns
+
+The `AnimationTrack` that was started, or `nil` if the group name does not exist.
+
+## Example
+
+After defining an `"Attacks"` group, call `playGroup()` on each punch input to play a different attack animation each time.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+AnimationService:init(character, {
+  Attack1 = "rbxassetid://111111111",
+  Attack2 = "rbxassetid://222222222",
+  Attack3 = "rbxassetid://333333333",
+})
+
+AnimationService:defineGroup("Attacks", { "Attack1", "Attack2", "Attack3" })
+
+-- Fires on each punch — a random attack plays every time
+punchButton.Activated:Connect(function()
+  AnimationService:playGroup(character, "Attacks")
+end)
+```
+
+<Note>
+  `playGroup()` uses the service's default playback parameters — `Movement` priority, non-looping, with a `0.15 s` fade-in. If you need custom priority, looping, or a different fade time, retrieve a random ID yourself and call `play()` directly with the options you need.
+</Note>
+
+<Warning>
+  If `groupName` does not match any group registered with `defineGroup()`, nothing plays and `nil` is returned **silently** — no error is raised. Double-check your group name spelling if animations are unexpectedly absent.
+</Warning>

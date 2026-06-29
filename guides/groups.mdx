@@ -1,0 +1,88 @@
+---
+title: "Animation Groups: Random Variation with EZAnim"
+sidebarTitle: "Groups"
+description: "Define named animation groups in EZAnim to play a random animation from a set — ideal for attack combos, footstep variations, and idle fidgets."
+---
+
+Repeating the same animation every time a player attacks, idles, or takes a step quickly starts to feel mechanical. EZAnim's group system lets you define a named set of animation keys and then call `playGroup()` to have the service pick one at random — giving your characters natural, unpredictable variation without any extra logic on your end.
+
+## Defining and playing groups
+
+`defineGroup(name, list)` registers a named group on the service instance. The `list` parameter is a table of string keys that must correspond to entries you already provided in the `List` table passed to `init()`. Once defined, `playGroup(model, groupName)` selects a random key from that group and calls `play()` on it for the given model.
+
+```lua
+local Anim = AnimationService.init({
+    List = {
+        Attack1   = "rbxassetid://11111111111",
+        Attack2   = "rbxassetid://22222222222",
+        Attack3   = "rbxassetid://33333333333",
+        Idle1     = "rbxassetid://44444444444",
+        Idle2     = "rbxassetid://55555555555",
+        Idle3     = "rbxassetid://66666666666",
+        Step1     = "rbxassetid://77777777777",
+        Step2     = "rbxassetid://88888888888",
+    }
+})
+
+-- Define groups once, right after init
+Anim:defineGroup("Attacks",   { "Attack1", "Attack2", "Attack3" })
+Anim:defineGroup("Idles",     { "Idle1",   "Idle2",   "Idle3"   })
+Anim:defineGroup("Footsteps", { "Step1",   "Step2"              })
+```
+
+<Note>
+  Groups are global to the service instance — not per-model. Define them once after `init()` and you can use them across every model that shares the same `Anim` instance. Redefining a group name overwrites the previous definition.
+</Note>
+
+## Using groups in practice
+
+### Attack combos
+
+Randomising attacks from a pool means players see different animations each swing, making combat feel less robotic.
+
+```lua
+tool.Activated:Connect(function()
+    Anim:playGroup(character, "Attacks")
+end)
+```
+
+### Idle fidgets
+
+Cycle through a set of subtle idle variations on a timer so characters feel alive while standing still.
+
+```lua
+task.spawn(function()
+    while true do
+        Anim:playGroup(character, "Idles")
+        task.wait(8)
+    end
+end)
+```
+
+### Footstep variations
+
+Trigger a random footstep animation on each step event to avoid the "pitter-patter" repetition of a single looping clip.
+
+```lua
+humanoidRootPart:GetPropertyChangedSignal("Velocity"):Connect(function()
+    if humanoidRootPart.Velocity.Magnitude > 1 then
+        Anim:playGroup(character, "Footsteps")
+    end
+end)
+```
+
+### NPC reactions
+
+Give NPCs a pool of reaction animations so two nearby NPCs do not mirror each other perfectly when hit.
+
+```lua
+Anim:defineGroup("HitReactions", { "HitLeft", "HitRight", "HitCenter" })
+
+onNPCHit:Connect(function(npcModel)
+    Anim:playGroup(npcModel, "HitReactions")
+end)
+```
+
+<Tip>
+  Every key in a group's list must exist in the `List` table you passed to `init()`. If a key is unrecognised, EZAnim will silently do nothing for that pick — your code will not error, but the animation simply will not play. Double-check spelling when a group seems to play less frequently than expected.
+</Tip>

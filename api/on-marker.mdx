@@ -1,0 +1,75 @@
+---
+title: "AnimationService:onMarker() — React to Animation Keyframe Markers"
+sidebarTitle: "onMarker()"
+description: "onMarker() connects a callback to fire whenever a named KeyframeMarker is reached in a playing animation track."
+icon: "flag"
+---
+
+`onMarker()` listens for a named `KeyframeMarker` inside an animation track and fires your callback each time the playhead crosses it. Use it to synchronise gameplay events — hit detection, sound effects, particle bursts, screen shake — precisely with a specific frame of an animation rather than relying on timers.
+
+## Signature
+
+```lua
+AnimationService:onMarker(
+  model:    Model,
+  id:       string,
+  marker:   string,
+  callback: () -> ()
+): RBXScriptConnection | nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object that owns the animation. Must have been initialised with `init()`.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The animation ID string whose track you want to listen to.
+</ParamField>
+
+<ParamField body="marker" type="string" required>
+  The exact name of the `KeyframeMarker` as set in the Roblox Animation Editor. The lookup is case-sensitive.
+</ParamField>
+
+<ParamField body="callback" type="function" required>
+  A function called each time the marker is reached. Receives no arguments.
+</ParamField>
+
+## Returns
+
+An `RBXScriptConnection` you can use to disconnect the listener manually, or `nil` if the track could not be found.
+
+## Example
+
+Spawn a hit VFX at the exact frame the sword connects, using a `"HitFrame"` marker placed in the Animation Editor.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+AnimationService:init(character, {
+  SwordSlash = "rbxassetid://111111111",
+})
+
+-- Start the animation first so the track exists
+AnimationService:play(character, "SwordSlash")
+
+-- Then register the marker listener
+AnimationService:onMarker(character, "SwordSlash", "HitFrame", function()
+  -- Spawn hit VFX at the weapon tip
+  local vfx = hitEffect:Clone()
+  vfx.Parent = character.RightHand
+  game:GetService("Debris"):AddItem(vfx, 0.3)
+
+  -- Damage check
+  detectHit(character)
+end)
+```
+
+<Note>
+  The animation **must already be playing** before you call `onMarker()`. If the track has not been started yet, `getAnim()` returns `nil` and `onMarker()` returns `nil` without connecting anything. Always call `play()` first.
+</Note>
+
+<Note>
+  The returned connection is stored internally by EZAnim and is automatically cleaned up when `destroy()` is called on the service. You only need to store the connection yourself if you want to disconnect it before then.
+</Note>

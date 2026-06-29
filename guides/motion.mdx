@@ -1,0 +1,107 @@
+---
+title: "Tweening and Lerping with EZAnim's Motion Helpers"
+sidebarTitle: "Motion Helpers"
+description: "EZAnim includes tween and lerp utilities for moving Roblox parts and models — use them alongside animations for polished combined effects."
+---
+
+Animations drive a character's skeleton, but polished gameplay often requires moving the parts and models themselves — sliding a door open, launching a character across the arena, or fading a prop out of existence. EZAnim ships two motion helpers, `tween()` and `lerp()`, so you can keep all of your animation and motion logic in one place rather than reaching for separate service references.
+
+## tween()
+
+`tween(instance, info, goal)` is a thin wrapper around `TweenService:Create()`. It creates the tween, calls `Play()` immediately, and returns the `Tween` object so you can connect to its `Completed` event or cancel it if needed.
+
+Use `tween()` whenever you want to animate **instance properties** — `Transparency`, `Color`, `Size`, `CFrame`, or any other tweenable property. TweenService handles easing curves, property interpolation, and completion signalling for you.
+
+<CodeGroup>
+
+```lua Fade a part out
+local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+Anim:tween(part, tweenInfo, { Transparency = 1 })
+```
+
+```lua Move a part to a new position
+Anim:tween(part, TweenInfo.new(0.5), { Position = Vector3.new(0, 10, 0) })
+```
+
+```lua Resize and recolour simultaneously
+local info = TweenInfo.new(0.8, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out)
+Anim:tween(part, info, {
+    Size  = Vector3.new(4, 4, 4),
+    Color = Color3.fromRGB(255, 80, 80),
+})
+```
+
+</CodeGroup>
+
+## lerp()
+
+`lerp(instance, fromValue, toValue, duration, alphaFn)` drives interpolation frame-by-frame using `RunService.Heartbeat`. It supports both `Vector3` and `CFrame` value types and automatically applies the correct assignment depending on whether the target is a `BasePart` or a `Model`:
+
+| Value type | BasePart | Model |
+|------------|----------|-------|
+| `Vector3`  | Sets `instance.Position` | Calls `instance:PivotTo(CFrame.new(value))` |
+| `CFrame`   | Sets `instance.CFrame`   | Calls `instance:PivotTo(value)` |
+
+Use `lerp()` when you need **frame-level control** over a position or CFrame movement — particularly when you want to supply a custom easing function that TweenService's preset styles cannot express.
+
+<CodeGroup>
+
+```lua Linear Vector3 move
+-- Move a part from its current position to a target over 2 seconds
+Anim:lerp(part, part.Position, targetPosition, 2)
+```
+
+```lua CFrame move with ease-in
+-- Move a model's pivot with a sine ease-in curve
+Anim:lerp(model, model:GetPivot(), targetCFrame, 1.5, function(a)
+    return math.sin(a * math.pi / 2)  -- ease-in: starts slow, ends fast
+end)
+```
+
+```lua CFrame move with ease-in-out
+Anim:lerp(model, model:GetPivot(), targetCFrame, 1.0, function(a)
+    -- Smoothstep: slow at both ends, fast in the middle
+    return a * a * (3 - 2 * a)
+end)
+```
+
+</CodeGroup>
+
+The optional `alphaFn` parameter receives the raw linear alpha (0 → 1) and must return a remapped alpha in the same range. Any mathematical curve works — you are not limited to built-in easing styles.
+
+<Note>
+  `lerp()` returns the `Heartbeat` connection it creates internally. If you need to cancel the movement before it completes — for example, because the character was teleported or the object was destroyed — call `:Disconnect()` on the returned connection.
+
+  ```lua
+  local connection = Anim:lerp(part, part.Position, destination, 3)
+
+  -- Cancel early if needed
+  someEvent:Connect(function()
+      connection:Disconnect()
+  end)
+  ```
+</Note>
+
+## Combining motion helpers with animation events
+
+The real power of having motion helpers and animation helpers in the same service is that you can synchronise them precisely using `onMarker()`.
+
+<Tip>
+  Combine `tween()` or `lerp()` with `onMarker()` to tie visual effects and movement to exact keyframes. For example, start a part fade exactly when a spell animation reaches its release frame, or launch a character the moment a slam animation hits the ground — no timers, no guesswork.
+</Tip>
+
+```lua
+-- Launch the character forward the instant the Attack animation hits "LaunchFrame"
+Anim:onMarker(character, "Attack", "LaunchFrame", function()
+    local root   = character.HumanoidRootPart
+    local target = root.CFrame * CFrame.new(0, 0, -20)  -- 20 studs forward
+
+    -- Lerp the model forward over 0.3 seconds with ease-out
+    Anim:lerp(character, root.CFrame, target, 0.3, function(a)
+        return 1 - (1 - a) ^ 2  -- ease-out quad
+    end)
+
+    -- Simultaneously flash the part white
+    Anim:tween(root, TweenInfo.new(0.15), { Color = Color3.new(1, 1, 1) })
+end)
+```

@@ -1,0 +1,57 @@
+---
+title: "Animation List: Mapping Names to Asset IDs in EZAnim"
+sidebarTitle: "Animation List"
+description: "The animation list is the central registry of your animations in EZAnim — a Luau table mapping human-readable names to Roblox asset IDs."
+---
+
+The animation list is the foundation of every EZAnim instance. When you call `AnimationService.init()`, you pass a `List` table that maps human-readable string keys to Roblox `rbxassetid://` strings. Every other method — `play()`, `stop()`, `queue()`, and more — references animations by those same keys, so getting your list right is the first step to a working animation setup.
+
+## Structure
+
+The `List` field in your `init()` options is a plain Luau key-value table. Each key is the name you will use throughout your code; each value is the full `rbxassetid://` string pointing to the uploaded animation asset.
+
+```lua
+local Anim = AnimationService.init({
+    List = {
+        Idle     = "rbxassetid://12345678901",
+        Walk     = "rbxassetid://12345678902",
+        Run      = "rbxassetid://12345678903",
+        Jump     = "rbxassetid://12345678904",
+        Attack   = "rbxassetid://12345678905",
+        Death    = "rbxassetid://12345678906",
+    }
+})
+```
+
+## Using Keys as IDs
+
+The key you define in `List` — for example `"Idle"` — is the `id` argument you pass to every EZAnim method that targets a specific animation:
+
+```lua
+Anim:play(character, "Idle",   "Idle",     true)
+Anim:play(character, "Attack", "Action",   false)
+Anim:stop(character, "Walk")
+Anim:queue(character, "Run")
+```
+
+The string must match exactly. EZAnim looks up the key directly in `_AnimationList`; if the key is absent, `play()` silently returns without playing anything. This makes typos easy to miss, so double-check your spelling whenever an animation refuses to play.
+
+## Missing IDs
+
+If you pass an `id` that does not exist in the list, EZAnim will silently return without playing or throwing an error. While this prevents crashes, it also means silent failures can be hard to diagnose. Always verify your key names match the entries defined at init time.
+
+```lua
+-- "Atack" is a typo — play() silently does nothing
+Anim:play(character, "Atack", "Action", false)
+
+-- Correct key — plays as expected
+Anim:play(character, "Attack", "Action", false)
+```
+
+<Tip>
+  Centralise your animation list in a single ModuleScript and `require` it from every script that needs animations. This guarantees all scripts reference the same IDs and makes bulk updates — such as swapping an asset ID — a one-line change.
+</Tip>
+
+<Note>
+  The list is fixed at construction time. You cannot add, remove, or replace asset IDs after `AnimationService.init()` has been called. If you need a different set of animations, create a new `AnimationService` instance with a new `List`.
+</Note>

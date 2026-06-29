@@ -1,0 +1,50 @@
+---
+title: "Animation Priorities in EZAnim"
+sidebarTitle: "Priorities"
+description: "EZAnim maps six named priority levels to Roblox's AnimationPriority enum, controlling which animation wins when multiple tracks play simultaneously."
+---
+
+Roblox's `AnimationPriority` system determines which animation track takes visual precedence when two or more tracks are playing on the same rig at the same time. Understanding priorities is essential for building layered animation setups — for example, making an attack override a walk cycle without interrupting a background idle loop.
+
+## How Roblox AnimationPriority Works
+
+When multiple `AnimationTrack` objects play simultaneously, Roblox blends them according to their priority level. A track with a higher priority level overrides the transforms contributed by any track at a lower level. If two tracks share the same priority, the one that started playing most recently takes precedence. EZAnim exposes this system through the `animType` string argument of `play()`.
+
+## Priority Levels
+
+EZAnim maps six named strings to the corresponding `Enum.AnimationPriority` values:
+
+| `animType` string | Roblox Priority |
+|---|---|
+| `Idle` | `Enum.AnimationPriority.Idle` |
+| `Movement` | `Enum.AnimationPriority.Movement` |
+| `Action` | `Enum.AnimationPriority.Action` |
+| `Action2` | `Enum.AnimationPriority.Action2` |
+| `Action3` | `Enum.AnimationPriority.Action3` |
+| `Action4` | `Enum.AnimationPriority.Action4` |
+
+The lookup uses `string.lower()` internally, so `"action"`, `"Action"`, and `"ACTION"` are all treated identically. If you omit `animType` or pass an unrecognised string, EZAnim falls back to `Enum.AnimationPriority.Movement`.
+
+## Code Examples
+
+The three most common priority levels cover the majority of character animation setups:
+
+```lua
+Anim:play(character, "Idle",   "Idle",     true)   -- background loop
+Anim:play(character, "Walk",   "Movement", true)   -- overrides Idle
+Anim:play(character, "Attack", "Action",   false)  -- overrides Movement
+```
+
+In this example, all three tracks can play at the same moment. The `Attack` track — at `Action` priority — controls the relevant joints while it runs. When it stops, `Walk` resumes full visual control. When `Walk` stops, `Idle` fills the gap.
+
+For more granular layering, you can use `Action2` through `Action4`:
+
+```lua
+-- Layer a block pose on top of a standard attack
+Anim:play(character, "Attack",    "Action",  false)
+Anim:play(character, "BlockPose", "Action2", true)
+```
+
+<Tip>
+  Use `Action2`, `Action3`, and `Action4` for layered combat animations that need to stack on top of each other — for example, a weapon swing (`Action`), a shield raise (`Action2`), and a facial expression (`Action3`) all playing simultaneously without any one cancelling the others.
+</Tip>

@@ -1,0 +1,67 @@
+---
+title: "AnimationService:pause() — Freeze an Animation in Place"
+sidebarTitle: "pause()"
+description: "pause() freezes a playing animation at its current frame by setting the track's speed to zero, without stopping or destroying the track."
+icon: "pause"
+---
+
+`AnimationService:pause()` freezes a playing animation at its current frame without stopping or unloading the track. It works by storing the track's current speed as an attribute and then calling `AdjustSpeed(0)`, which halts playback in place. Because the track remains loaded and active, you can resume it at any time with `resume()` and it will continue from exactly where it left off.
+
+## Signature
+
+```lua
+AnimationService:pause(
+    model: Model,
+    id:    string
+): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance whose animation you want to freeze.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The key of the animation to pause, as registered in your `init()` list.
+  The track must currently be loaded (i.e. `play()` must have been called
+  for this `id` on this model).
+</ParamField>
+
+## Returns
+
+`nil`.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+local function onStunApplied(character)
+    -- Freeze the character mid-animation during a stun effect
+    AnimService:pause(character, "Walk")
+
+    -- Play a separate stun overlay animation at higher priority
+    AnimService:play(character, "Stun", "action", false, 0.1)
+end
+
+local function onStunEnded(character)
+    -- Stop the stun overlay and unfreeze the walk cycle
+    AnimService:stop(character, "Stun", 0.1)
+    AnimService:resume(character, "Walk")
+end
+```
+
+<Note>
+  The original playback speed is stored as a `PausedSpeed` attribute on the
+  track itself. When you call `resume()`, EZAnim reads this attribute and
+  restores the exact speed the track had before it was paused — including any
+  speed adjustments you made with Roblox's native `AdjustSpeed` API prior to
+  calling `pause()`.
+</Note>
+
+<Warning>
+  Calling `pause()` on a track that is not currently loaded (because `play()`
+  was never called or `stop()` has already been called) will silently no-op.
+  Always ensure the track is playing before pausing it.
+</Warning>

@@ -1,0 +1,68 @@
+---
+title: "AnimationService:getAnim() — Retrieve a Raw AnimationTrack"
+sidebarTitle: "getAnim()"
+description: "getAnim() returns the raw Roblox AnimationTrack for a named animation on a model, giving you direct access to track properties and signals."
+icon: "film"
+---
+
+`getAnim()` returns the underlying Roblox `AnimationTrack` object that EZAnim holds for a specific animation on a model. This gives you direct access to every property and signal on the track — `TimePosition`, `Speed`, `WeightCurrent`, `DidLoop`, and more — that EZAnim does not expose through its own API.
+
+## Signature
+
+```lua
+AnimationService:getAnim(model: Model, id: string): AnimationTrack | nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object that owns the animation. Must have been initialised with `init()`.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The animation ID string whose underlying track you want to retrieve.
+</ParamField>
+
+## Returns
+
+The `AnimationTrack` instance, or `nil` if the animation has never been played on this model (tracks are created lazily on first play).
+
+## Example
+
+Read `TimePosition` directly from the track to scrub a progress bar as an animation plays, and adjust playback speed at runtime.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+AnimationService:init(character, {
+  Cutscene = "rbxassetid://111111111",
+})
+
+AnimationService:play(character, "Cutscene")
+
+-- Drive a progress bar using raw track data
+runService.RenderStepped:Connect(function()
+  local track = AnimationService:getAnim(character, "Cutscene")
+  if not track then return end
+
+  -- Display playback position as a 0–1 fraction
+  local progress = track.TimePosition / track.Length
+  progressBar.Size = UDim2.new(progress, 0, 1, 0)
+end)
+
+-- Slow the animation to half speed on demand
+slowButton.Activated:Connect(function()
+  local track = AnimationService:getAnim(character, "Cutscene")
+  if track then
+    track:AdjustSpeed(0.5)
+  end
+end)
+```
+
+<Note>
+  `getAnim()` returns `nil` if the animation has **never been played** on this model. Tracks are created lazily the first time `play()` is called, so always play the animation at least once before relying on this method.
+</Note>
+
+<Tip>
+  For simple active/inactive checks, prefer `isPlaying()` — it is more readable and handles the `nil` case for you. Reserve `getAnim()` for situations where you genuinely need track properties or signals that EZAnim does not expose directly.
+</Tip>

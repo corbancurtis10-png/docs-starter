@@ -1,0 +1,102 @@
+---
+title: "AnimationService:lerp() — Frame-by-Frame Position and CFrame Interpolation"
+sidebarTitle: "lerp()"
+description: "lerp() interpolates a BasePart's Position or CFrame each Heartbeat frame over a set duration, with an optional custom easing function."
+icon: "route"
+---
+
+`lerp()` moves a `BasePart` or `Model` from one position or orientation to another by interpolating the value on every `Heartbeat` frame over a fixed duration. Unlike `tween()`, which delegates to `TweenService`, `lerp()` gives you direct per-frame control and accepts a custom `alphaFn` so you can apply any easing curve you like — including ones that aren't available in `Enum.EasingStyle`. The returned `RBXScriptConnection` disconnects automatically once the duration has elapsed, but you can disconnect it early to cancel mid-flight.
+
+## Signature
+
+```lua
+AnimationService:lerp(instance, fromValue, toValue, duration, alphaFn) --> RBXScriptConnection
+```
+
+## Parameters
+
+<ParamField path="instance" type="Instance" required>
+  The `BasePart` or `Model` to move. For `Model` targets, a `PrimaryPart` must
+  be set when passing a `Vector3` value; `CFrame` targets work on any `Model`
+  via `PivotTo`.
+</ParamField>
+
+<ParamField path="fromValue" type="Vector3 | CFrame" required>
+  The starting value for the interpolation. Pass `part.Position` or
+  `model:GetPivot()` to start from the current position. Must be the same type
+  as `toValue`.
+</ParamField>
+
+<ParamField path="toValue" type="Vector3 | CFrame" required>
+  The ending value for the interpolation. Must be the same type as `fromValue`.
+  Mixing types (e.g. passing a `Vector3` for `fromValue` and a `CFrame` for
+  `toValue`) causes `lerp()` to exit silently without animating anything.
+</ParamField>
+
+<ParamField path="duration" type="number" required>
+  Total duration of the interpolation in seconds. The alpha value reaches `1`
+  at exactly this many seconds after the call, at which point the connection is
+  automatically disconnected.
+</ParamField>
+
+<ParamField path="alphaFn" type="function" optional>
+  An optional function that receives the raw linear alpha (`0` → `1`) and
+  returns a remapped alpha. Use this to apply custom easing curves. Defaults to
+  a linear pass-through: `function(a) return a end`.
+</ParamField>
+
+## Returns
+
+Returns an `RBXScriptConnection` for the internal `Heartbeat` listener. The
+connection disconnects itself automatically when the lerp finishes. Disconnect
+it manually at any time to cancel the animation early.
+
+## Supported Value Types
+
+The property that gets set depends on the types you pass and the class of `instance`:
+
+| `fromValue` / `toValue` type | Instance type             | Property set                    |
+| ---------------------------- | ------------------------- | ------------------------------- |
+| `Vector3`                    | `BasePart`                | `instance.Position`             |
+| `Vector3`                    | `Model` (with PrimaryPart)| `instance:PivotTo(CFrame.new(value))` |
+| `CFrame`                     | `BasePart`                | `instance.CFrame`               |
+| `CFrame`                     | `Model`                   | `instance:PivotTo(value)`       |
+
+## Example
+
+```lua
+-- Linear position lerp over 2 seconds
+Anim:lerp(part, part.Position, Vector3.new(0, 20, 0), 2)
+
+-- CFrame lerp for a model over 1.5 seconds
+Anim:lerp(model, model:GetPivot(), targetCFrame, 1.5)
+
+-- Quadratic ease-in using a custom alpha function
+Anim:lerp(part, part.Position, targetPos, 1, function(a)
+    return a * a
+end)
+
+-- Ease-out cubic
+Anim:lerp(part, part.Position, targetPos, 1, function(a)
+    return 1 - (1 - a) ^ 3
+end)
+
+-- Cancel the lerp early after 1 second
+local conn = Anim:lerp(part, part.Position, targetPos, 3)
+task.delay(1, function()
+    conn:Disconnect()
+end)
+```
+
+<Note>
+  If `fromValue` and `toValue` are different types — for example, a `Vector3`
+  and a `CFrame` — `lerp()` will exit silently without animating anything. Make
+  sure both values share the same type.
+</Note>
+
+<Tip>
+  Use `lerp()` for positional and orientational movement where you want custom
+  easing or per-frame callbacks. Use `tween()` for property animations like
+  `Transparency`, `Color`, or `Size`, which `TweenService` handles more
+  efficiently.
+</Tip>

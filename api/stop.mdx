@@ -1,0 +1,59 @@
+---
+title: "AnimationService:stop() — Stop a Specific Animation Track"
+sidebarTitle: "stop()"
+description: "stop() fades out and stops a named animation on a model. Omit the id to stop all animations at once, with an optional custom fade duration."
+icon: "stop"
+---
+
+`AnimationService:stop()` fades out and stops a playing animation on a model. Pass an animation name to stop only that track, or omit the name entirely to stop every track currently playing on the model at once. An optional `fadeTime` parameter controls how long the fade-out blend takes, letting you choose between an instant cut and a smooth exit.
+
+## Signature
+
+```lua
+AnimationService:stop(
+    model:    Model,
+    id:       string?,
+    fadeTime: number?
+): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance on which to stop the animation(s).
+</ParamField>
+
+<ParamField body="id" type="string">
+  The key of the animation to stop, as registered in your `init()` list.
+  If omitted (or `nil`), **all** currently playing tracks on the model are
+  stopped. This is equivalent to calling `stopAll()`.
+</ParamField>
+
+<ParamField body="fadeTime" type="number">
+  The fade-out blend duration in seconds. Defaults to `0.15`. Set to `0` for
+  an instant stop with no blending.
+</ParamField>
+
+## Returns
+
+`nil`.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+-- Stop a single named animation
+AnimService:stop(character, "Walk", 0.2)
+
+-- Stop all animations on the model with the default 0.15s fade
+AnimService:stop(character)
+
+-- Stop all animations instantly (no fade)
+AnimService:stop(character, nil, 0)
+```
+
+<Note>
+  If `model` has no tracked animations (for example, before any `play()` call
+  or after `destroy()`), `stop()` exits silently without errors.
+</Note>

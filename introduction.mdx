@@ -1,0 +1,73 @@
+---
+title: "EZAnim: Roblox Animation Service for Luau"
+sidebarTitle: "Introduction"
+description: "EZAnim is a Luau module that centralises animation control for Roblox characters — playback, queues, priorities, ragdoll, and motion helpers in one service."
+---
+
+EZAnim is a lightweight Luau service module that replaces scattered, per-script `Animator` calls with a single, centralised animation controller for your Roblox game. This page explains what EZAnim is, who it is for, the full set of features it provides, and how it fits into your project structure.
+
+## What Is EZAnim?
+
+Managing animations in Roblox usually means writing the same boilerplate — finding the `Humanoid`, loading an `AnimationTrack`, wiring up `Stopped` events, and remembering to clean everything up — in every script that needs to move a character. EZAnim consolidates all of that into one `AnimationService` object that you initialise once and share across your codebase. You define your animation IDs in a single list, and EZAnim handles track loading, caching, priority assignment, event callbacks, and teardown for every model you pass to it.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Playback Control" icon="circle-play">
+    Play, stop, pause, resume, and cross-fade animations on any `Humanoid`-based model with a single method call. Fade times are fully configurable.
+  </Card>
+  <Card title="Priority System" icon="layer-group">
+    Map animations to Roblox's built-in `AnimationPriority` levels — `Idle`, `Movement`, `Action`, `Action2`, `Action3`, and `Action4` — so tracks blend and override exactly as intended.
+  </Card>
+  <Card title="Queue System" icon="list-ol">
+    Line up animations to play back-to-back using `queue`. EZAnim automatically fires the next track the moment the current one finishes, keeping your sequences smooth and code-free.
+  </Card>
+  <Card title="Named Groups" icon="object-group">
+    Define reusable animation sets with `defineGroup`, then trigger the whole set by name with `playGroup`. Perfect for combo attacks or context-sensitive movement states.
+  </Card>
+  <Card title="State Tracking" icon="tower-broadcast">
+    Store and retrieve arbitrary state strings per model with `setState` and `getState`. Build clean animation state machines without managing your own lookup tables.
+  </Card>
+  <Card title="Ragdoll Physics" icon="person-falling">
+    Enable and disable ragdoll simulation per model with `ragdoll` and `unragdoll`. An optional duration parameter automatically restores the character after a set time.
+  </Card>
+  <Card title="Motion Helpers" icon="wand-magic-sparkles">
+    Tween any `Instance` property with `tween`, or smoothly interpolate a value over time with `lerp` using a custom alpha function — no separate `TweenService` boilerplate required.
+  </Card>
+  <Card title="Auto-cleanup" icon="broom">
+    Call `destroy` when a model is removed and EZAnim tears down all cached tracks, active connections, queues, and state data tied to that model in one call.
+  </Card>
+</CardGroup>
+
+## Who Should Use EZAnim?
+
+EZAnim is aimed at Roblox developers who want clean, maintainable animation management without reinventing the wheel on every project. Whether you are building a combat system, an NPC controller, a cutscene manager, or a full character rig, EZAnim gives you a single, well-organised API surface so your animation logic stays readable and consistent across your entire codebase.
+
+## How EZAnim Fits in a Project
+
+EZAnim is a single `ModuleScript`. You require it once — typically inside a server `Script` or a client `LocalScript` — and call `AnimationService.init()` with your animation list to get back an `Anim` instance. That instance holds all cached tracks and state for every model you pass to it, so there is no need to create multiple service objects. The recommended pattern is to house the instance in its own `ModuleScript` so every script in your game shares the same service without creating duplicate caches.
+
+```lua
+-- Example: shared AnimationService module
+local AnimationService = require(game.ServerStorage.EZAnim)
+
+local Anim = AnimationService.init({
+    List = {
+        Idle   = "rbxassetid://YOUR_IDLE_ID",
+        Walk   = "rbxassetid://YOUR_WALK_ID",
+        Attack = "rbxassetid://YOUR_ATTACK_ID",
+    }
+})
+
+return Anim
+```
+
+Any other script that needs to play an animation simply requires this module and calls methods directly — no duplication, no mismatched caches.
+
+## Prerequisites
+
+Before integrating EZAnim, make sure you have the following in place:
+
+- **Roblox Studio** — EZAnim is a Luau module and must be used inside a Roblox project.
+- **A Humanoid-based character model** — EZAnim expects models that contain a `Humanoid`. It will automatically create an `Animator` inside the `Humanoid` if one does not already exist.
+- **Animation asset IDs** — Upload your animations to Roblox and collect their asset IDs before initialising the service. EZAnim maps string keys to those IDs so you reference animations by name throughout your code.

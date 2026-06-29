@@ -1,0 +1,57 @@
+---
+title: "AnimationService:stopAll() — Stop Every Animation on a Model"
+sidebarTitle: "stopAll()"
+description: "stopAll() is a convenience wrapper that stops all currently playing animation tracks on a model with an optional fade-out duration."
+icon: "stop"
+---
+
+`AnimationService:stopAll()` stops every animation track currently playing on a model in a single call. It is a thin, intent-expressing wrapper around `stop(model, nil, fadeTime)` — use it when you want to be explicit that you mean to clear the entire model's animation state rather than stopping one specific track.
+
+## Signature
+
+```lua
+AnimationService:stopAll(
+    model:    Model,
+    fadeTime: number?
+): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance on which all animations should be stopped.
+</ParamField>
+
+<ParamField body="fadeTime" type="number">
+  The fade-out blend duration in seconds applied to every track. Defaults to
+  `0.15`. Set to `0` for an immediate hard stop across all tracks.
+</ParamField>
+
+## Returns
+
+`nil`.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+-- Stop all animations with a gentle 0.3s fade when a player is downed
+local function onPlayerDowned(character)
+    AnimService:stopAll(character, 0.3)
+    AnimService:play(character, "Downed", "action", false)
+end
+
+-- Instant stop on respawn
+local function onPlayerRespawn(character)
+    AnimService:stopAll(character, 0)
+end
+```
+
+<Note>
+  `stopAll(model, fadeTime)` is exactly equivalent to calling
+  `stop(model, nil, fadeTime)`. Both code paths ultimately iterate over every
+  tracked entry for the model and call `:Stop(fadeTime)` on each track.
+  Prefer `stopAll()` for clarity at call sites where the intent is to clear
+  everything.
+</Note>

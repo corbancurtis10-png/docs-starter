@@ -1,0 +1,55 @@
+---
+title: "AnimationService:resume() — Resume a Paused Animation"
+sidebarTitle: "resume()"
+description: "resume() restores a paused animation to its original playback speed, picking up from exactly the frame where it was paused."
+icon: "play"
+---
+
+`AnimationService:resume()` restores a previously paused animation to its original playback speed. It reads the `PausedSpeed` attribute that `pause()` stored on the track and calls `AdjustSpeed()` with that value, causing the animation to continue seamlessly from the frame at which it was frozen. No blending or reloading occurs — the track simply starts moving again.
+
+## Signature
+
+```lua
+AnimationService:resume(
+    model: Model,
+    id:    string
+): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance whose animation you want to resume.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The key of the animation to resume, as registered in your `init()` list.
+  The track must be currently loaded and in a paused state (speed set to
+  zero by a previous `pause()` call).
+</ParamField>
+
+## Returns
+
+`nil`.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+-- Pause during a cutscene
+AnimService:play(character, "Idle", "core", true)
+AnimService:pause(character, "Idle")
+
+task.wait(3) -- cutscene runs for 3 seconds
+
+-- Resume exactly where the idle was frozen
+AnimService:resume(character, "Idle")
+```
+
+<Note>
+  If `pause()` was never called before `resume()`, the `PausedSpeed` attribute
+  will not exist on the track. In that case EZAnim falls back to a speed of
+  `1`, so the animation will resume at normal speed rather than throwing an
+  error.
+</Note>

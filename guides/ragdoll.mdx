@@ -1,0 +1,85 @@
+---
+title: "Ragdoll Physics for Roblox Characters with EZAnim"
+sidebarTitle: "Ragdoll"
+description: "Learn how to enable and disable ragdoll physics on any Roblox Humanoid character using EZAnim, with optional automatic recovery."
+---
+
+EZAnim's ragdoll system converts any Humanoid rig into a fully physics-driven ragdoll at runtime — no pre-built rig modifications required. It disables every `Motor6D` joint in the character, replaces each one with a `BallSocketConstraint` anchored by matching `Attachment` instances, and sets the `Humanoid` state to `Physics` so Roblox's physics engine takes over completely. Calling `unragdoll()` reverses the process and walks the character back upright.
+
+## How it works
+
+When you call `ragdoll()`, EZAnim:
+
+1. Calls `Humanoid:ChangeState(Enum.HumanoidStateType.Physics)` to hand control to the physics engine.
+2. Sets `PlatformStand = true` and `AutoRotate = false` so the Humanoid stops fighting the simulation.
+3. Iterates every `Motor6D` descendant, creates two `Attachment` instances (inheriting `C0`/`C1` offsets), connects them with a `BallSocketConstraint`, and disables the `Motor6D`.
+
+When you call `unragdoll()`, EZAnim re-enables the stored `Motor6D` joints, destroys the temporary constraints and attachments, restores `PlatformStand` and `AutoRotate`, and transitions the Humanoid to `GettingUp`.
+
+<Steps>
+
+<Step title="Trigger an instant ragdoll">
+
+Pass the character model to `ragdoll()` with no second argument. The character collapses immediately and stays down until you manually call `unragdoll()`.
+
+```lua
+-- Instant ragdoll with no time limit
+Anim:ragdoll(character)
+```
+
+A common place to call this is on the `Humanoid.Died` event so characters slump realistically on death:
+
+```lua
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+humanoid.Died:Connect(function()
+    Anim:ragdoll(character)
+end)
+```
+
+</Step>
+
+<Step title="Use automatic recovery with a duration">
+
+Pass a number of seconds as the second argument to `ragdoll()`. EZAnim internally calls `task.delay()` and invokes `unragdoll()` automatically after that time, so you do not have to track the timer yourself.
+
+```lua
+-- Ragdoll for 3 seconds, then automatically recover
+Anim:ragdoll(character, 3)
+```
+
+This is useful for knockback, explosion blasts, or any hit reaction where you want a brief physics interlude before the character stands back up:
+
+```lua
+humanoid.HealthChanged:Connect(function(health)
+    if health <= 0 then return end  -- let Died handle the fatal case
+    if hitByExplosion then
+        Anim:ragdoll(character, 2)  -- 2-second ragdoll, then auto-recover
+    end
+end)
+```
+
+</Step>
+
+<Step title="Manually recover the character">
+
+Call `unragdoll()` at any time to immediately restore the character, regardless of whether a duration timer is running.
+
+```lua
+-- Immediately stand the character back up
+Anim:unragdoll(character)
+```
+
+After this call the Humanoid automatically transitions to `GettingUp`, so the character plays its get-up animation before returning to normal locomotion — no extra state management needed.
+
+<Note>
+  After `unragdoll()`, the Humanoid transitions to `Enum.HumanoidStateType.GettingUp` automatically. You do not need to call `ChangeState()` manually; EZAnim handles it as the final step of the recovery sequence.
+</Note>
+
+</Step>
+
+</Steps>
+
+<Warning>
+  Never call `ragdoll()` twice on the same character without calling `unragdoll()` first. The joint data that EZAnim stores for recovery is overwritten on each `ragdoll()` call, so the first set of `Motor6D` references is lost. This makes it impossible to cleanly restore the rig and can leave orphaned constraints in the character hierarchy.
+</Warning>

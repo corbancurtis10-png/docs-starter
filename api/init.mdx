@@ -1,0 +1,67 @@
+---
+title: "AnimationService.init() — Create an EZAnim Service Instance"
+sidebarTitle: "init()"
+description: "AnimationService.init() constructs a new EZAnim instance with your animation list. Call this once and share the result across your scripts."
+icon: "square-plus"
+---
+
+`AnimationService.init()` is the constructor for EZAnim. It creates a new service instance and registers your named animation list, returning an object you can pass around to every script that needs to play, stop, or blend animations. Call it exactly once — typically inside a shared ModuleScript — and store the result so all consumers share the same internal state.
+
+## Signature
+
+```lua
+AnimationService.init(options: table): AnimationService
+```
+
+## Parameters
+
+<ParamField body="options" type="table" required>
+  Configuration table passed to the constructor.
+</ParamField>
+
+<ParamField body="options.List" type="table" required>
+  A key-value map of animation name strings to Roblox asset ID strings
+  (e.g. `"Idle" -> "rbxassetid://1234567890"`). Every animation you intend
+  to play must be registered here before any call to `play()`.
+</ParamField>
+
+## Returns
+
+A new `AnimationService` instance. Store this in a ModuleScript and require it from any script that needs animation control.
+
+## Example
+
+```lua
+-- AnimationService/init.server.luau  (or a shared ModuleScript)
+local EZAnim = require(game.ServerScriptService.EZAnim)
+
+local AnimService = EZAnim.init({
+    List = {
+        Idle        = "rbxassetid://1111111111",
+        Walk        = "rbxassetid://2222222222",
+        Run         = "rbxassetid://3333333333",
+        Attack      = "rbxassetid://4444444444",
+    },
+})
+
+return AnimService
+```
+
+Then, in any other script:
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        AnimService:play(character, "Idle", "core", true)
+    end)
+end)
+```
+
+<Note>
+  Call `init()` once per project. Creating multiple instances with different
+  `List` tables will result in separate, unshared caches and may cause
+  animations to conflict. Use a ModuleScript so Roblox's require cache ensures
+  every script receives the same instance.
+</Note>

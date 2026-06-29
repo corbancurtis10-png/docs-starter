@@ -1,0 +1,69 @@
+---
+title: "AnimationService:unragdoll() — Restore a Ragdolled Character"
+sidebarTitle: "unragdoll()"
+description: "unragdoll() re-enables all Motor6D joints, removes BallSocketConstraints, and returns the Humanoid to the GettingUp state after a ragdoll."
+icon: "person-walking"
+---
+
+`unragdoll()` reverses everything that `ragdoll()` did. It re-enables the stored `Motor6D` joints, destroys the `BallSocketConstraint` and `Attachment` instances that were created during ragdolling, and restores the `Humanoid` to its normal standing state. Once called, the character transitions to `Enum.HumanoidStateType.GettingUp`, which plays the standard get-up animation and hands control back to the player or NPC.
+
+## Signature
+
+```lua
+AnimationService:unragdoll(model)
+```
+
+## Parameters
+
+<ParamField path="model" type="Model" required>
+  The character `Model` to restore. This must be the same model that was passed
+  to `ragdoll()`. If the model has no `Humanoid`, or if `ragdoll()` was never
+  called on it, `unragdoll()` returns safely without throwing an error.
+</ParamField>
+
+## Returns
+
+`nil`. All side effects are applied directly to the model's descendants.
+
+## What It Does
+
+When you call `unragdoll()`, the following steps happen in order:
+
+1. **Re-enable joints** — Every `Motor6D` reference stored during `ragdoll()` is re-enabled by setting `motor.Enabled = true`.
+2. **Destroy physics objects** — All `BallSocketConstraint` and `Attachment` instances added by `ragdoll()` are located via `GetDescendants()` and destroyed, cleaning up the constraint rig entirely.
+3. **Restore Humanoid properties** — `PlatformStand` is set back to `false` and `AutoRotate` is set back to `true`, allowing the character to stand and self-orient again.
+4. **Transition to GettingUp** — `humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)` is called, triggering the built-in get-up animation and resuming normal Humanoid behaviour.
+5. **Clear internal state** — The model's entry in the internal ragdoll table is set to `nil` so the model is ready to be ragdolled again cleanly.
+
+## Example
+
+```lua
+-- Manual recovery after a permanent ragdoll
+Anim:unragdoll(character)
+
+-- Recovery triggered by a UI button
+recoverButton.Activated:Connect(function()
+    Anim:unragdoll(character)
+end)
+
+-- Recovery after a timed stun
+Anim:ragdoll(character)
+task.delay(4, function()
+    Anim:unragdoll(character)
+end)
+
+-- Safe to call even if ragdoll() was never used
+Anim:unragdoll(character)  -- returns silently, no error
+```
+
+<Note>
+  If `ragdoll()` was never called on this model, `unragdoll()` exits safely
+  without making any changes or throwing an error. You do not need to guard the
+  call with a check.
+</Note>
+
+<Tip>
+  After `unragdoll()` returns, the character automatically plays the standard
+  "getting up" animation through the `GettingUp` Humanoid state — you do not
+  need to trigger this manually.
+</Tip>

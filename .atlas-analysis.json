@@ -1,0 +1,132 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "EZAnim",
+  "projectDescription": "A Luau animation service module for Roblox that provides a clean API for playing, queuing, cross-fading, and managing character animations with support for ragdoll physics, state tracking, and motion tweening.",
+  "theme": "sequoia",
+  "primaryColor": "#848484",
+  "lightColor": "#1a1a1a",
+  "darkColor": "#cbcbcb",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/animation-list",
+              "concepts/priorities",
+              "concepts/state-system",
+              "concepts/queue-system"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/character-animations",
+              "guides/ragdoll",
+              "guides/groups",
+              "guides/motion"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Setup",
+            "pages": [
+              "api/init",
+              "api/destroy"
+            ]
+          },
+          {
+            "group": "Playback",
+            "pages": [
+              "api/play",
+              "api/stop",
+              "api/stop-all",
+              "api/pause",
+              "api/resume",
+              "api/cross-fade"
+            ]
+          },
+          {
+            "group": "Queue & Groups",
+            "pages": [
+              "api/queue",
+              "api/define-group",
+              "api/play-group"
+            ]
+          },
+          {
+            "group": "State & Events",
+            "pages": [
+              "api/set-state",
+              "api/get-state",
+              "api/reset",
+              "api/on-marker",
+              "api/on-stopped",
+              "api/is-playing",
+              "api/get-anim"
+            ]
+          },
+          {
+            "group": "Motion",
+            "pages": [
+              "api/tween",
+              "api/lerp",
+              "api/ragdoll",
+              "api/unragdoll"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Simple init-based constructor with animation ID list",
+    "Priority-based animation playback (Idle, Movement, Action, Action2-4)",
+    "Cross-fade between animations",
+    "Animation queue for sequential playback",
+    "Pause and resume animations without stopping",
+    "Named animation groups with random selection",
+    "Per-model state tracking",
+    "Marker and stopped event hooks",
+    "Ragdoll physics with optional auto-recovery duration",
+    "TweenService and Heartbeat-based lerp helpers",
+    "Automatic cleanup on model removal"
+  ],
+  "publicApiSurface": [
+    "AnimationService.init(options)",
+    "AnimationService:play(model, id, animType, looped, fadeTime)",
+    "AnimationService:stop(model, id, fadeTime)",
+    "AnimationService:stopAll(model, fadeTime)",
+    "AnimationService:crossFade(model, fromId, toId, time)",
+    "AnimationService:pause(model, id)",
+    "AnimationService:resume(model, id)",
+    "AnimationService:queue(model, id)",
+    "AnimationService:getAnim(model, id)",
+    "AnimationService:isPlaying(model, id)",
+    "AnimationService:onMarker(model, id, marker, callback)",
+    "AnimationService:onStopped(model, id, callback)",
+    "AnimationService:defineGroup(name, list)",
+    "AnimationService:playGroup(model, groupName)",
+    "AnimationService:setState(model, state)",
+    "AnimationService:getState(model)",
+    "AnimationService:reset(model)",
+    "AnimationService:tween(instance, info, goal)",
+    "AnimationService:lerp(instance, fromValue, toValue, duration, alphaFn)",
+    "AnimationService:ragdoll(model, duration)",
+    "AnimationService:unragdoll(model)",
+    "AnimationService:destroy(model)"
+  ]
+}

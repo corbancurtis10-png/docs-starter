@@ -1,0 +1,59 @@
+---
+title: "AnimationService:isPlaying() — Check if an Animation Is Active"
+sidebarTitle: "isPlaying()"
+description: "isPlaying() returns true if the named animation is currently playing on the model, letting you guard against double-playing or build state logic."
+icon: "circle-check"
+---
+
+`isPlaying()` checks whether a specific animation track is currently active on a model. Use it as a lightweight guard before calling `play()` to avoid restarting an animation mid-playback, or to drive UI indicators and state machines that need to reflect what is currently running.
+
+## Signature
+
+```lua
+AnimationService:isPlaying(model: Model, id: string): boolean
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object to check. Must have been initialised with `init()`.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The animation ID string to query. Must match an ID registered with the service for this model.
+</ParamField>
+
+## Returns
+
+`true` if the animation is currently playing, `false` if it is not playing or if the track has never been loaded for this model.
+
+## Example
+
+Guard the walk animation so it does not restart every frame, and drive a ScreenGui icon that lights up while the character runs.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+-- Guard: only start Walk if it isn't already running
+runService.Heartbeat:Connect(function()
+  local isMoving = character.Humanoid.MoveDirection.Magnitude > 0
+
+  if isMoving then
+    if not AnimationService:isPlaying(character, "Walk") then
+      AnimationService:play(character, "Walk")
+    end
+  else
+    if AnimationService:isPlaying(character, "Walk") then
+      AnimationService:stop(character, "Walk")
+    end
+  end
+end)
+
+-- UI indicator: highlight a run icon while Walk is active
+runService.RenderStepped:Connect(function()
+  local playing = AnimationService:isPlaying(character, "Walk")
+  runIcon.ImageColor3 = playing
+    and Color3.fromRGB(100, 220, 100)  -- green when active
+    or  Color3.fromRGB(80,  80,  80)   -- grey when idle
+end)
+```

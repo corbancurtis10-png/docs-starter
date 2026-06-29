@@ -1,0 +1,128 @@
+---
+title: "Playing Character Animations with EZAnim"
+sidebarTitle: "Character Animations"
+description: "A practical walkthrough of playing, cross-fading, pausing, and responding to animation events for Roblox characters using EZAnim."
+---
+
+EZAnim gives you a single, consistent API for every stage of a character animation's lifecycle — from the first `play()` call through cross-fades, pauses, keyframe events, and final cleanup. This guide walks you through each step so you can build polished, responsive character motion with minimal boilerplate.
+
+<Steps>
+
+<Step title="Set up the service">
+
+Require the module and call `AnimationService.init()`, passing a `List` table that maps friendly string keys to Roblox asset IDs. Every subsequent call uses those keys, so you never have to scatter raw asset IDs through your code.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+local Anim = AnimationService.init({
+    List = {
+        Idle   = "rbxassetid://11111111111",
+        Walk   = "rbxassetid://22222222222",
+        Attack = "rbxassetid://33333333333",
+        Stun   = "rbxassetid://44444444444",
+    }
+})
+```
+
+Keep this instance in a shared module or pass it through your architecture so all systems talk to the same service.
+
+</Step>
+
+<Step title="Play a looping idle animation">
+
+Call `play()` with the target `model`, the animation key, an animation priority string, and `true` for the `looped` parameter. EZAnim loads the animation onto the model's `Animator` and starts playback immediately.
+
+```lua
+-- Play the Idle animation at Idle priority, looping forever
+Anim:play(character, "Idle", "Idle", true)
+```
+
+Valid priority strings mirror Roblox's `Enum.AnimationPriority`: `"Idle"`, `"Movement"`, `"Action"`, `"Action2"`, `"Action3"`, and `"Action4"`. Higher-priority animations override lower ones when multiple tracks are active.
+
+</Step>
+
+<Step title="Cross-fade between animations">
+
+When you want a smooth transition — for example, blending from an idle into a walk cycle — use `crossFade()` instead of calling `stop()` and `play()` back-to-back. It fades the outgoing track out while fading the incoming track in over the time you specify (in seconds).
+
+```lua
+-- Smoothly transition from Idle to Walk over 0.3 seconds
+Anim:crossFade(character, "Idle", "Walk", 0.3)
+```
+
+<Tip>
+  Use `crossFade()` for all locomotion transitions. Abruptly stopping one animation and starting another creates a visible pop; a 0.2–0.4 second fade keeps movement feeling fluid and natural.
+</Tip>
+
+</Step>
+
+<Step title="Pause and resume an animation">
+
+If you need to freeze a track mid-playback — for example, holding the final frame of an emote while a UI is open — call `pause()`. When you are ready to continue from exactly where it stopped, call `resume()`.
+
+```lua
+-- Freeze the Walk track
+Anim:pause(character, "Walk")
+
+-- Continue from the same point later
+Anim:resume(character, "Walk")
+```
+
+Pausing does not reset the animation's playback position, so the character will not snap or repeat frames when you resume.
+
+</Step>
+
+<Step title="Listen for a KeyframeMarker with onMarker()">
+
+Add named markers inside Roblox's Animation Editor to mark meaningful moments — a sword swing's impact frame, a footstep's contact point, the peak of a jump. EZAnim's `onMarker()` fires a callback exactly when playback reaches that marker.
+
+```lua
+-- "HitFrame" is a marker placed in the Attack animation in the Animation Editor
+Anim:onMarker(character, "Attack", "HitFrame", function()
+    -- Spawn a hit VFX at the weapon's position
+    local vfx = hitEffect:Clone()
+    vfx.Parent = workspace
+    vfx:PivotTo(character.RightHand.CFrame)
+    game:GetService("Debris"):AddItem(vfx, 0.5)
+end)
+```
+
+<Note>
+  The marker name passed to `onMarker()` must match the name set in the Animation Editor **exactly**, including capitalisation and spacing. A mismatch will silently fail to fire the callback.
+</Note>
+
+</Step>
+
+<Step title="Listen for animation stop with onStopped()">
+
+Use `onStopped()` to react when an animation finishes naturally — without polling or manually tracking time. This is ideal for actions that should unlock only after a full animation plays out, such as re-enabling player controls after a stun.
+
+```lua
+-- Re-enable controls once the Stun animation finishes
+Anim:onStopped(character, "Stun", function()
+    playerController:setEnabled(true)
+end)
+
+-- Play the stun (non-looped) — onStopped fires when it ends
+Anim:play(character, "Stun", "Action", false)
+```
+
+</Step>
+
+<Step title="Guard playback with isPlaying()">
+
+Before starting a new animation, check whether it is already running with `isPlaying()`. This prevents redundant re-starts that can cause stuttering or reset a looping animation mid-cycle.
+
+```lua
+-- Only start Walk if it is not already active
+if not Anim:isPlaying(character, "Walk") then
+    Anim:play(character, "Walk", "Movement", true)
+end
+```
+
+`isPlaying()` returns `true` if the animation track exists on the model and is currently playing, and `false` otherwise — including cases where the track has never been started or was stopped.
+
+</Step>
+
+</Steps>

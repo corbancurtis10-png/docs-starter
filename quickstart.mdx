@@ -1,47 +1,101 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with EZAnim in Your Roblox Game"
+sidebarTitle: "Quickstart"
+description: "Learn how to install EZAnim, define your animation list, and play your first animation on a Roblox character in under five minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This guide walks you through everything you need to get EZAnim running in your Roblox game — from grabbing the module to playing and stopping your first animation on a character. The whole process takes less than five minutes.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+<Note>
+  Every model you pass to EZAnim must contain a `Humanoid`. If the `Humanoid` does not already have an `Animator` child, EZAnim will create one for you automatically.
+</Note>
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Get the module">
+    Open **Roblox Studio** and navigate to the **Creator Store** (previously known as the Toolbox). Search for **EZAnim** and click **Get** to add it to your inventory. Once it appears in your inventory, insert it into your game.
 
-    ```bash
-    npm install your-package
+    Place the `EZAnim` `ModuleScript` in either `ServerStorage` (for server-side animation control) or `ReplicatedStorage` (if you need both the server and the client to access it). `ServerStorage` is the recommended default for most character animation workflows.
+  </Step>
+
+  <Step title="Require the module">
+    In the `Script` or `LocalScript` where you want to control animations, require EZAnim to get the `AnimationService` table:
+
+    ```lua
+    local AnimationService = require(game.ServerStorage.EZAnim)
+    ```
+
+    If you placed EZAnim in `ReplicatedStorage`, swap the path accordingly:
+
+    ```lua
+    local AnimationService = require(game.ReplicatedStorage.EZAnim)
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
 
-    ```bash
-    your-cli init
+  <Step title="Initialize with your animation list">
+    Call `AnimationService.init()` and pass a `List` table that maps friendly string keys to your Roblox animation asset IDs. The returned `Anim` object is your live service instance — keep a reference to it for all subsequent calls.
+
+    ```lua
+    local Anim = AnimationService.init({
+        List = {
+            Idle   = "rbxassetid://YOUR_IDLE_ID",
+            Walk   = "rbxassetid://YOUR_WALK_ID",
+            Jump   = "rbxassetid://YOUR_JUMP_ID",
+            Attack = "rbxassetid://YOUR_ATTACK_ID",
+        }
+    })
     ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
+    Replace each `YOUR_*_ID` placeholder with the numeric asset ID of the corresponding animation you uploaded to Roblox. The keys (`"Idle"`, `"Walk"`, etc.) are the names you will use in every other EZAnim method call.
+
+    <Tip>
+      Store the `Anim` instance inside its own `ModuleScript` and `require` that module from every script that needs animation control. This ensures all scripts share the same service instance and the same internal track cache, preventing duplicate `AnimationTrack` objects from being loaded for the same model.
+    </Tip>
+  </Step>
+
+  <Step title="Play your first animation">
+    Pass the character model, the animation key, the priority level, and whether the animation should loop to `Anim:play()`:
+
+    ```lua
+    local character = player.Character
+    Anim:play(character, "Idle", "Idle", true)
+    ```
+
+    The third argument (`"Idle"`) is the priority tier — valid values are `"Idle"`, `"Movement"`, `"Action"`, `"Action2"`, `"Action3"`, and `"Action4"`. The fourth argument (`true`) tells EZAnim to loop the track. Setting it to `false` plays the animation once and stops automatically.
+  </Step>
+
+  <Step title="Stop the animation">
+    When you no longer need the animation — for example when the player starts walking — call `Anim:stop()` with the character and the animation key:
+
+    ```lua
+    Anim:stop(character, "Idle")
+    ```
+
+    You can also pass an optional `fadeTime` (in seconds) as a third argument to control how quickly the track blends out:
+
+    ```lua
+    Anim:stop(character, "Idle", 0.3)
+    ```
+
+    To stop every animation playing on a model at once, use `stopAll`:
+
+    ```lua
+    Anim:stopAll(character)
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Next Steps
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Now that EZAnim is up and running, explore the rest of the documentation to make the most of the service.
+
+<CardGroup cols={3}>
+  <Card title="Core Concepts" icon="book-open" href="/concepts/animation-list">
+    Understand how EZAnim manages tracks, caches animators, and resolves priorities under the hood.
+  </Card>
+  <Card title="Guides" icon="map" href="/guides/character-animations">
+    Step-by-step walkthroughs for common patterns: combo queues, ragdoll sequences, and state machines.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/init">
+    Full documentation for every method on `AnimationService`, including parameters, return values, and examples.
+  </Card>
+</CardGroup>

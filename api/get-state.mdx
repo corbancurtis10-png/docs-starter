@@ -1,0 +1,50 @@
+---
+title: "AnimationService:getState() — Read a Model's Current Animation State"
+sidebarTitle: "getState()"
+description: "getState() returns the string state previously set on a model with setState(), or nil if no state has been assigned."
+icon: "magnifying-glass"
+---
+
+`getState()` retrieves the state string most recently stored against a model by `setState()`. Use it anywhere in your scripts to read the model's current animation state and make decisions — such as whether to block a new animation, trigger a sound effect, or update a UI element.
+
+## Signature
+
+```lua
+AnimationService:getState(model: Model): string | nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object whose state you want to read. The model must have been initialised with `init()`.
+</ParamField>
+
+## Returns
+
+A `string` containing the state name set by `setState()`, or `nil` if no state has been assigned to this model yet (or after `reset()` clears it).
+
+## Example
+
+Read the current state before deciding which animation to play on a humanoid, and display it in a debug label.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+-- Read state before playing an emote
+local function tryPlayEmote(character, emoteId)
+  local state = AnimationService:getState(character)
+
+  if state == "Dead" or state == "Stunned" then
+    print("Cannot play emote — character is:", state)
+    return
+  end
+
+  AnimationService:play(character, emoteId)
+end
+
+-- Display state in a ScreenGui label (useful during development)
+runService.Heartbeat:Connect(function()
+  local state = AnimationService:getState(character)
+  debugLabel.Text = "Anim State: " .. tostring(state)
+end)
+```

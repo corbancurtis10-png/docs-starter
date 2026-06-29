@@ -1,0 +1,56 @@
+---
+title: "AnimationService:queue() — Enqueue an Animation for Sequential Playback"
+sidebarTitle: "queue()"
+description: "queue() appends an animation ID to a model's FIFO queue. The queued animation plays automatically when the current non-looping track finishes."
+icon: "list"
+---
+
+`queue()` appends an animation ID to a model's internal FIFO queue. When the currently playing non-looping track fires its `Stopped` signal, the service automatically dequeues the next ID and plays it — letting you chain animations without writing manual `Stopped` listeners.
+
+## Signature
+
+```lua
+AnimationService:queue(model: Model, id: string): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object whose animation queue you want to append to. The model must have already been passed to `init()`.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The animation ID string to enqueue. Must match an ID registered with the service for this model.
+</ParamField>
+
+## Returns
+
+`nil`
+
+## Example
+
+The following example plays a three-hit melee combo. `Attack1` starts immediately; `Attack2` and `Attack3` are queued and play sequentially as each previous track finishes.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+-- Initialise the model with all three attack animations
+AnimationService:init(character, {
+  Attack1 = "rbxassetid://111111111",
+  Attack2 = "rbxassetid://222222222",
+  Attack3 = "rbxassetid://333333333",
+})
+
+-- Play the first hit, then enqueue the follow-ups
+AnimationService:play(character, "Attack1")
+AnimationService:queue(character, "Attack2")
+AnimationService:queue(character, "Attack3")
+```
+
+<Note>
+  `queue()` only works with **non-looping** animations. Looping tracks never fire `Stopped`, so the queue is never drained and subsequent entries will not play.
+</Note>
+
+<Tip>
+  Call `reset()` to clear the queue mid-combo — for example, if the player gets interrupted or you need to cancel the remaining chain.
+</Tip>

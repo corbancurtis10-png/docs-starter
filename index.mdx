@@ -1,20 +1,62 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "EZAnim: Roblox Animation Service for Luau"
+sidebarTitle: "Home"
+description: "EZAnim is a lightweight Luau module that gives your Roblox game a clean, unified API for animation playback, queuing, state tracking, and ragdoll physics."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+EZAnim is a drop-in Luau module for Roblox that replaces scattered `Animator:LoadAnimation` calls with a single, consistent service. From basic character animations to cross-fades, queues, ragdoll physics, and motion tweening — EZAnim handles it all with a few method calls.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn what EZAnim is and how it fits into your Roblox project.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get EZAnim running in your game in under five minutes.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/init">
+    Browse every method with full parameter docs and examples.
+  </Card>
+  <Card title="Guides" icon="map" href="/guides/character-animations">
+    Step-by-step walkthroughs for common animation workflows.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What EZAnim Gives You
+
+<CardGroup cols={3}>
+  <Card title="Playback Control" icon="play">
+    Play, pause, resume, stop, and cross-fade animations with a single line of code.
+  </Card>
+  <Card title="Priority System" icon="layer-group">
+    Assign Idle, Movement, Action, or Action2–4 priorities to every animation.
+  </Card>
+  <Card title="Animation Queue" icon="list-ol">
+    Chain animations back-to-back — the next one starts automatically when the current one ends.
+  </Card>
+  <Card title="Named Groups" icon="object-group">
+    Bundle animation IDs into a group and play a random one with a single call.
+  </Card>
+  <Card title="State Tracking" icon="database">
+    Tag each model with a state string and read it back anywhere in your code.
+  </Card>
+  <Card title="Ragdoll Physics" icon="person-falling">
+    Enable full ragdoll mode on any character, with optional auto-recovery after a set duration.
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+<Steps>
+  <Step title="Require the module">
+    Add `EZAnim` to your project via Roblox Studio and require it from a Script or LocalScript.
+  </Step>
+  <Step title="Define your animation list">
+    Pass a table of `name → assetId` pairs when calling `AnimationService.init()`.
+  </Step>
+  <Step title="Play an animation">
+    Call `AnimationService:play(model, "animName")` on any model that has a Humanoid and Animator.
+  </Step>
+  <Step title="Explore advanced features">
+    Add queues, groups, ragdoll, and motion tweens as your game grows.
+  </Step>
+</Steps>

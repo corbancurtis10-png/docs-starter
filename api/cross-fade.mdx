@@ -1,0 +1,79 @@
+---
+title: "AnimationService:crossFade() — Smoothly Transition Between Animations"
+sidebarTitle: "crossFade()"
+description: "crossFade() stops one animation and immediately starts another using the same fade duration, creating a smooth blend between two tracks."
+icon: "shuffle"
+---
+
+`AnimationService:crossFade()` transitions smoothly from one animation to another by fading the first track out and the second track in over the same duration. Internally it calls `stop(model, fromId, time)` followed immediately by `play(model, toId, nil, false, time)`, so both fades are in progress simultaneously and Roblox's animation blending system handles the interpolation. This makes it ideal for locomotion state machines, where a jarring cut between states would be noticeable.
+
+## Signature
+
+```lua
+AnimationService:crossFade(
+    model:  Model,
+    fromId: string,
+    toId:   string,
+    time:   number?
+): AnimationTrack?
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance on which to perform the cross-fade.
+</ParamField>
+
+<ParamField body="fromId" type="string" required>
+  The key of the currently playing animation to fade **out**, as registered
+  in your `init()` list.
+</ParamField>
+
+<ParamField body="toId" type="string" required>
+  The key of the animation to fade **in**, as registered in your `init()`
+  list.
+</ParamField>
+
+<ParamField body="time" type="number">
+  The fade duration in seconds applied to **both** the outgoing and incoming
+  tracks simultaneously. Defaults to `0.15`.
+</ParamField>
+
+## Returns
+
+The new `AnimationTrack` for `toId` that is now playing, or `nil` if `toId` was not found in the animation list or the model had no valid `Animator`.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+-- Simple locomotion state machine
+local currentAnim = "Idle"
+
+local function transitionTo(character, newAnim, fadeTime)
+    if currentAnim == newAnim then return end
+    AnimService:crossFade(character, currentAnim, newAnim, fadeTime)
+    currentAnim = newAnim
+end
+
+-- Smooth walk-to-run transition
+transitionTo(character, "Idle", 0.3)
+
+task.wait(1)
+transitionTo(character, "Walk", 0.35)   -- gentle blend into walk
+
+task.wait(2)
+transitionTo(character, "Run",  0.3)    -- smooth acceleration blend
+
+task.wait(3)
+transitionTo(character, "Idle", 0.4)    -- slow, satisfying deceleration back to idle
+```
+
+<Tip>
+  Use a longer `time` value (0.3–0.5 s) for locomotion transitions such as
+  Idle → Walk → Run, where a gradual blend feels natural. Use a shorter value
+  (0.05–0.1 s) for combat or reaction animations where you need a snappy,
+  responsive feel. Because both fades share the same duration, the blend is
+  always symmetrical.
+</Tip>

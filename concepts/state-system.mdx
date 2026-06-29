@@ -1,0 +1,59 @@
+---
+title: "Per-Model State Tracking in EZAnim"
+sidebarTitle: "State System"
+description: "EZAnim's state system lets you tag any character model with a string state and read it back, keeping your animation logic in sync across scripts."
+---
+
+As your animation logic grows, you will often need to prevent certain animations from playing when a character is in a particular condition — for example, stopping walk animations from firing on a character that has just died. EZAnim's state system gives you a lightweight, no-dependency way to attach an arbitrary string label to any model and read it back from anywhere in your code.
+
+## Setting and Reading State
+
+Use `setState()` to attach a state string to a model and `getState()` to retrieve it:
+
+```lua
+-- Attach a state
+Anim:setState(character, "Dead")
+
+-- Read the state back
+local currentState = Anim:getState(character)
+print(currentState) -- "Dead"
+```
+
+The state value can be any string you choose — EZAnim places no restrictions on the naming convention. Common patterns include `"Idle"`, `"Sprinting"`, `"Dead"`, `"Stunned"`, and `"Climbing"`.
+
+## Guarding Animations Against State
+
+The most practical use of the state system is guarding `play()` calls so that conflicting animations never fire. You write these guards yourself using a simple `if` check:
+
+```lua
+-- Set state when a character dies
+Anim:setState(character, "Dead")
+Anim:play(character, "Death", "Action", false)
+
+-- Guard other animations against the Dead state
+if Anim:getState(character) ~= "Dead" then
+    Anim:play(character, "Walk", "Movement", true)
+end
+```
+
+This pattern keeps animation decisions close to where they happen without requiring a separate state machine library or BindableEvent architecture.
+
+## Resetting State
+
+Calling `reset()` on a model clears its state back to `nil`, along with stopping all playing animations and flushing the animation queue:
+
+```lua
+-- Character respawns — clear everything
+Anim:reset(character)
+
+-- getState now returns nil
+print(Anim:getState(character)) -- nil
+```
+
+<Note>
+  States are stored per-model. Each character has its own independent state entry, so setting one character's state to `"Dead"` has no effect on any other character in the same service instance.
+</Note>
+
+<Warning>
+  EZAnim does **not** automatically check the state before playing an animation. Calling `play()` on a model tagged as `"Dead"` will still play the animation. All state guards must be written explicitly in your own code — EZAnim only provides storage and retrieval.
+</Warning>

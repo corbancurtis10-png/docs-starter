@@ -1,0 +1,57 @@
+---
+title: "AnimationService:reset() — Stop All Animations and Clear State"
+sidebarTitle: "reset()"
+description: "reset() stops all playing animations, clears the model's animation queue, and sets its state to nil — a full soft-reset without destroying the service."
+icon: "rotate-left"
+---
+
+`reset()` performs a soft-reset on a single model: it stops every active animation track, empties the model's animation queue, and wipes its stored state back to `nil`. This is the recommended way to bring a character back to a clean slate on respawn or after a match ends, without tearing down and rebuilding the entire service.
+
+## Signature
+
+```lua
+AnimationService:reset(model: Model): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object to reset. The model must have been initialised with `init()`.
+</ParamField>
+
+## Returns
+
+`nil`
+
+## Example
+
+Call `reset()` when a character respawns so that stale animations, leftover queue entries, and old state values from a previous life do not bleed into the new one.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+local Players = game:GetService("Players")
+
+Players.PlayerAdded:Connect(function(player)
+  player.CharacterAdded:Connect(function(character)
+    -- Give the character a moment to fully load
+    task.wait(0.1)
+
+    AnimationService:init(character, {
+      Idle   = "rbxassetid://111111111",
+      Walk   = "rbxassetid://222222222",
+      Death  = "rbxassetid://333333333",
+    })
+
+    -- Clean up any state from a previous life
+    AnimationService:reset(character)
+
+    -- Safe to start fresh animations now
+    AnimationService:play(character, "Idle")
+  end)
+end)
+```
+
+<Note>
+  Unlike `destroy()`, `reset()` does **not** remove the model's cached `Animation` instances. All previously loaded tracks remain available and can be played again immediately after the reset.
+</Note>

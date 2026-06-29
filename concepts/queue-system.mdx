@@ -1,0 +1,55 @@
+---
+title: "Animation Queue System in EZAnim"
+sidebarTitle: "Queue System"
+description: "EZAnim's queue system automatically chains non-looping animations — add IDs to the queue and each one plays as soon as the previous track stops."
+---
+
+When you need a sequence of animations to play back-to-back — such as a multi-hit attack combo or a cutscene gesture chain — manually listening for each track to finish and then triggering the next one adds significant boilerplate. EZAnim's queue system handles this automatically: you push animation IDs into a per-model FIFO list and each one plays the moment the previous non-looping track stops.
+
+## How the Queue Works
+
+Internally, every model has its own queue array. `queue(model, id)` appends an animation ID to the end of that array. When a non-looping animation finishes (its `Stopped` event fires), EZAnim automatically calls `_playNextInQueue()`, which shifts the first ID off the front of the array and plays it. This continues until the queue is empty.
+
+```lua
+-- Play an attack combo
+Anim:play(character, "Attack1", "Action", false)
+Anim:queue(character, "Attack2")
+Anim:queue(character, "Attack3")
+-- Attack2 plays when Attack1 ends, then Attack3 plays when Attack2 ends
+```
+
+You can queue any number of IDs before the first animation even finishes — they will drain in order.
+
+## Clearing the Queue
+
+To cancel all pending queued animations and stop everything currently playing, call `reset()`:
+
+```lua
+-- Cancel the rest of the queue and stop all animations
+Anim:reset(character)
+```
+
+This is useful when an external event — such as the character taking damage or dying — should immediately abort a combo in progress and transition to a different animation.
+
+## Combining Queue with onStopped
+
+You can pair the queue system with `onStopped()` to run code after an entire combo finishes — for example, returning a character to their idle state once the last queued animation completes:
+
+```lua
+Anim:play(character, "Attack1", "Action", false)
+Anim:queue(character, "Attack2")
+Anim:queue(character, "Attack3")
+
+Anim:onStopped(character, "Attack3", function()
+    -- The full combo is done — return to idle
+    Anim:play(character, "Idle", "Idle", true)
+end)
+```
+
+<Tip>
+  Combine the queue system with `onStopped()` to trigger events or state changes after an entire combo finishes, without needing to manually track which animation in the sequence is currently playing.
+</Tip>
+
+<Note>
+  Queued animations are played with default parameters: `Movement` priority, non-looping, and a 0.15-second fade time. If you need a different priority, a specific fade duration, or looping behaviour for any animation in the sequence, call `play()` directly and chain your own logic — the queue is best suited for simple, uniform sequences.
+</Note>

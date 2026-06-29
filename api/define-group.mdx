@@ -1,0 +1,62 @@
+---
+title: "AnimationService:defineGroup() — Register a Named Animation Group"
+sidebarTitle: "defineGroup()"
+description: "defineGroup() registers a named list of animation IDs as a group. Use playGroup() to play a random member — ideal for combat variety and idle fidgets."
+icon: "object-group"
+---
+
+`defineGroup()` stores a named list of animation ID strings in the service so that `playGroup()` can later pick a random entry from it. Grouping animations is the fastest way to add natural variety to repeated actions — attacks, idles, footsteps, and taunts all benefit from a small pool of alternatives.
+
+## Signature
+
+```lua
+AnimationService:defineGroup(name: string, list: table): nil
+```
+
+## Parameters
+
+<ParamField body="name" type="string" required>
+  The identifier used when calling `playGroup()`. Choose a descriptive name such as `"Attacks"` or `"Idles"`.
+</ParamField>
+
+<ParamField body="list" type="table" required>
+  An array of animation ID strings. Every ID in this list must already exist in the animation list you passed to `init()` for any model you intend to play the group on.
+</ParamField>
+
+## Returns
+
+`nil`
+
+## Example
+
+Define three separate groups — attacks, idles, and footsteps — after initialising the service. Call `playGroup()` at runtime to let the service choose randomly.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+AnimationService:init(character, {
+  Attack1     = "rbxassetid://111111111",
+  Attack2     = "rbxassetid://222222222",
+  Attack3     = "rbxassetid://333333333",
+  Idle1       = "rbxassetid://444444444",
+  Idle2       = "rbxassetid://555555555",
+  Footstep1   = "rbxassetid://666666666",
+  Footstep2   = "rbxassetid://777777777",
+})
+
+-- Register groups once, after init()
+AnimationService:defineGroup("Attacks",   { "Attack1", "Attack2", "Attack3" })
+AnimationService:defineGroup("Idles",     { "Idle1", "Idle2" })
+AnimationService:defineGroup("Footsteps", { "Footstep1", "Footstep2" })
+
+-- Later, at runtime:
+AnimationService:playGroup(character, "Attacks")
+```
+
+<Note>
+  Groups are **global to the service instance**, not per-model. A group you define applies to any model you pass to `playGroup()`, provided that model was initialised with the relevant IDs.
+</Note>
+
+<Note>
+  Always call `defineGroup()` **after** `init()` and **before** any call to `playGroup()`. Calling `playGroup()` with an undefined group name returns `nil` silently.
+</Note>

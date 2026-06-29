@@ -1,0 +1,92 @@
+---
+title: "AnimationService:play() — Play an Animation on a Model"
+sidebarTitle: "play()"
+description: "play() loads and plays a named animation on a model's Animator. If the animation is already playing, it returns the existing track without restarting."
+icon: "play"
+---
+
+`AnimationService:play()` is the primary way to start an animation. It resolves the animation name against the list you provided in `init()`, loads an `AnimationTrack` onto the model's `Humanoid > Animator`, sets the priority and loop behaviour you specify, and then begins playback with a smooth fade-in. If the requested animation is already playing on that model, the method returns the existing track immediately rather than restarting it from the beginning.
+
+## Signature
+
+```lua
+AnimationService:play(
+    model:    Model,
+    id:       string,
+    animType: string?,
+    looped:   boolean?,
+    fadeTime: number?
+): AnimationTrack?
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The Roblox `Model` instance to animate. The model must contain a `Humanoid`
+  with an `Animator` descendant (or one will be created automatically).
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The key used to look up the animation in the `List` table you passed to
+  `init()`. For example, `"Idle"` or `"Attack"`. The call is silently ignored
+  if the key does not exist in the list.
+</ParamField>
+
+<ParamField body="animType" type="string">
+  The animation priority level as a case-insensitive string. Accepted values
+  mirror `Enum.AnimationPriority` names: `"core"`, `"idle"`, `"movement"`,
+  `"action"`, `"action2"`, `"action3"`, `"action4"`. Defaults to
+  `"movement"`.
+</ParamField>
+
+<ParamField body="looped" type="boolean">
+  Whether the track should loop continuously. Defaults to `false`. Non-looping
+  tracks automatically drain the animation queue for that model when they
+  finish.
+</ParamField>
+
+<ParamField body="fadeTime" type="number">
+  The fade-in blend duration in seconds. Defaults to `0.15`. Increase this
+  for smoother locomotion transitions; decrease it for snappy combat
+  animations.
+</ParamField>
+
+## Returns
+
+The `AnimationTrack` that is now playing, or `nil` if the model had no valid `Animator`, or if `id` was not found in the animation list.
+
+## Example
+
+```lua
+local AnimService = require(game.ServerScriptService.AnimationService)
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+
+        -- Looping idle — plays continuously at Movement priority
+        AnimService:play(character, "Idle", "movement", true)
+
+        -- One-shot attack at Action priority with a snappy 0.05s fade-in
+        local attackTrack = AnimService:play(character, "Attack", "action", false, 0.05)
+
+        if attackTrack then
+            attackTrack.Stopped:Connect(function()
+                -- Return to idle once the attack finishes
+                AnimService:play(character, "Idle", "movement", true)
+            end)
+        end
+    end)
+end)
+```
+
+<Note>
+  If `id` does not match any key in your `init()` list, `play()` returns
+  `nil` silently. Double-check spelling and casing — keys are matched exactly
+  as you defined them in `options.List`.
+</Note>
+
+<Note>
+  Calling `play()` on an animation that is already playing on a model returns
+  the existing track without resetting its position or restarting the fade.
+  Use `stop()` first if you need to restart from the beginning.
+</Note>

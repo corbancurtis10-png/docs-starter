@@ -1,0 +1,77 @@
+---
+title: "AnimationService:ragdoll() — Enable Physics Ragdoll on a Character"
+sidebarTitle: "ragdoll()"
+description: "ragdoll() disables all Motor6D joints on a Humanoid model and replaces them with BallSocketConstraints, enabling full physics-based ragdoll."
+icon: "person-falling"
+---
+
+`ragdoll()` converts a Humanoid character into a physics-driven ragdoll by disabling every `Motor6D` joint in the model and replacing each one with a `BallSocketConstraint`. The Humanoid is simultaneously switched into the `Physics` state so that gravity and collisions take full control of the body. If you pass an optional `duration`, the ragdoll recovers automatically after that many seconds by calling `unragdoll()` for you.
+
+## Signature
+
+```lua
+AnimationService:ragdoll(model, duration)
+```
+
+## Parameters
+
+<ParamField path="model" type="Model" required>
+  The character `Model` to ragdoll. It must contain a `Humanoid` child. If no
+  `Humanoid` is found, `ragdoll()` returns immediately without making any
+  changes.
+</ParamField>
+
+<ParamField path="duration" type="number" optional>
+  If provided, `ragdoll()` schedules an automatic call to `unragdoll()` after
+  this many seconds using `task.delay`. Omit this parameter if you want to
+  control recovery manually.
+</ParamField>
+
+## Returns
+
+`nil`. All side effects are applied directly to the model's descendants.
+
+## How It Works
+
+When you call `ragdoll()`, the following steps happen in order:
+
+1. **Humanoid state** — The `Humanoid` is set to `Enum.HumanoidStateType.Physics`, which disables normal locomotion and hands full movement control to the physics engine.
+2. **Platform stand** — `PlatformStand` is set to `true` and `AutoRotate` is set to `false` so the character cannot self-right or rotate toward the camera.
+3. **Joint replacement** — Every `Motor6D` descendant is located, its reference is saved internally, and the motor is disabled. A pair of `Attachment` instances (positioned at `C0` and `C1`) is created on the two connected parts, and a `BallSocketConstraint` linking those attachments is parented to `Part0`. This preserves the joint positions while allowing free rotation.
+4. **Auto-recovery** — If `duration` was supplied, `task.delay(duration, ...)` is used to call `unragdoll()` after the specified time.
+
+## Example
+
+```lua
+-- Permanent ragdoll — you must call unragdoll() manually
+Anim:ragdoll(character)
+
+-- Auto-recover after 3 seconds
+Anim:ragdoll(character, 3)
+
+-- Trigger a ragdoll on character death
+humanoid.Died:Connect(function()
+    Anim:ragdoll(character)
+end)
+
+-- Ragdoll on an explosion hit, recover after 2 seconds
+explosion.Hit:Connect(function(part)
+    local model = part:FindFirstAncestorOfClass("Model")
+    if model then
+        Anim:ragdoll(model, 2)
+    end
+end)
+```
+
+<Warning>
+  Do **not** call `ragdoll()` twice on the same model without calling
+  `unragdoll()` first. The internal joint table will be overwritten, making it
+  impossible to correctly restore the original `Motor6D` connections on
+  recovery.
+</Warning>
+
+<Note>
+  The model must contain at least one `Motor6D` descendant for the ragdoll to
+  have any visible effect. A model with no joints will still have its Humanoid
+  state changed, but the character will not collapse physically.
+</Note>

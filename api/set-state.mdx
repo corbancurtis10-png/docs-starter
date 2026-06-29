@@ -1,0 +1,59 @@
+---
+title: "AnimationService:setState() — Tag a Model With an Animation State"
+sidebarTitle: "setState()"
+description: "setState() stores an arbitrary string against a model so your scripts can coordinate animation logic without external variables or RemoteEvents."
+icon: "tag"
+---
+
+`setState()` attaches a named state string to a model inside the service. You can read it back anywhere with `getState()` and use it as a guard to prevent conflicting animations from playing — for example, blocking walk animations while a character is dead or stunned. EZAnim stores the value but does not enforce any rules on its own; the logic is entirely yours to write.
+
+## Signature
+
+```lua
+AnimationService:setState(model: Model, state: string): nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object to tag. The model must have been initialised with `init()`.
+</ParamField>
+
+<ParamField body="state" type="string" required>
+  An arbitrary state name, for example `"Idle"`, `"Dead"`, or `"Attacking"`. The string is stored as-is and is case-sensitive when read back.
+</ParamField>
+
+## Returns
+
+`nil`
+
+## Example
+
+Set the `"Dead"` state when a character dies, then guard the walk animation so it cannot play on a dead character.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+-- On character death
+character.Humanoid.Died:Connect(function()
+  AnimationService:play(character, "Death")
+  AnimationService:setState(character, "Dead")
+end)
+
+-- Movement loop — respects the Dead state guard
+runService.Heartbeat:Connect(function()
+  if AnimationService:getState(character) == "Dead" then
+    return  -- do not play walk while dead
+  end
+
+  if character.Humanoid.MoveDirection.Magnitude > 0 then
+    if not AnimationService:isPlaying(character, "Walk") then
+      AnimationService:play(character, "Walk")
+    end
+  end
+end)
+```
+
+<Note>
+  EZAnim does **not** automatically block animations based on state. You are responsible for writing the guard logic, as shown in the example above. The state is simply a convenience store to avoid cluttering your scripts with external variables.
+</Note>

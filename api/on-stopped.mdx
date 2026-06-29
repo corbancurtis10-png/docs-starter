@@ -1,0 +1,71 @@
+---
+title: "AnimationService:onStopped() — Run a Callback When an Animation Ends"
+sidebarTitle: "onStopped()"
+description: "onStopped() connects a callback to the Stopped signal of an animation track, firing once when the track finishes or is explicitly stopped."
+icon: "flag-checkered"
+---
+
+`onStopped()` connects a callback to an animation track's `Stopped` signal. The callback fires exactly once when the track finishes playing naturally or is halted by a call to `stop()`. This is useful for sequencing post-animation logic — re-enabling movement, chaining a transition, or triggering a cooldown — without polling or guessing at timings.
+
+## Signature
+
+```lua
+AnimationService:onStopped(
+  model:    Model,
+  id:       string,
+  callback: () -> ()
+): RBXScriptConnection | nil
+```
+
+## Parameters
+
+<ParamField body="model" type="Model" required>
+  The character or object that owns the animation. Must have been initialised with `init()`.
+</ParamField>
+
+<ParamField body="id" type="string" required>
+  The animation ID string whose track you want to listen to.
+</ParamField>
+
+<ParamField body="callback" type="function" required>
+  A function called once when the track stops. Receives no arguments.
+</ParamField>
+
+## Returns
+
+An `RBXScriptConnection` you can use to disconnect the listener manually, or `nil` if the track could not be found.
+
+## Example
+
+Lock player movement while a stun animation plays, then automatically unlock it the moment the track stops — regardless of whether it ended naturally or was cut short.
+
+```lua
+local AnimationService = require(game.ReplicatedStorage.EZAnim)
+
+AnimationService:init(character, {
+  Stunned = "rbxassetid://111111111",
+  Idle    = "rbxassetid://222222222",
+})
+
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+-- Play the stun animation and lock controls
+AnimationService:play(character, "Stunned")
+AnimationService:setState(character, "Stunned")
+humanoid.WalkSpeed = 0
+
+-- Re-enable movement as soon as the stun ends
+AnimationService:onStopped(character, "Stunned", function()
+  AnimationService:setState(character, "Idle")
+  humanoid.WalkSpeed = 16
+  AnimationService:play(character, "Idle")
+end)
+```
+
+<Note>
+  The track **must already be playing** before you call `onStopped()`. If the track has not been started, `getAnim()` returns `nil` and this method returns `nil` without connecting anything.
+</Note>
+
+<Note>
+  The `Stopped` signal fires for **both** natural completion and manual calls to `stop()`. If you need to distinguish between the two, track the reason yourself before calling `stop()`.
+</Note>
